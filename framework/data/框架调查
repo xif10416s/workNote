@@ -1,0 +1,77 @@
+1.kafka	
+Zookeeper server Data : /kafka_data/ZookeeperData1	
+==>	
+建议 ： dataDir=/var/lib/zookeeper	
+	
+不要和kafka 日志放一个盘	
+	
+2.cassandra	
+Commit log disk - SATA¶	
+The disk need not be large, but it should be fast enough to receive all of your writes as appends (sequential I/O).	
+Commit log disk - SSD¶	
+Unlike spinning disks, it's all right to store both commit logs and SSTables are on the same mount point.	
+Data disks¶	
+Use one or more disks and make sure they are large enough for the data volume and fast enough to both satisfy reads that are not cached in memory and to keep up with compaction.	
+RAID on data disks¶	
+It is generally not necessary to use RAID for the following reasons:	
+Data is replicated across the cluster based on the replication factor you've chosen.	
+Starting in version 1.2, Cassandra includes a JBOD (Just a bunch of disks) feature to take care of disk management. Because Cassandra properly reacts to a disk failure either by stopping the affected node or by blacklisting the failed drive, you can deploy Cassandra nodes with large disk arrays without the overhead of RAID 10. You can configure Cassandra to stop the affected node or blacklist the drive according to your availability/consistency requirements. You can also recover a disk using JBOD.	
+RAID on the commit log disk¶	
+Generally RAID is not needed for the commit log disk. Replication adequately prevents data loss. If you need extra redundancy, use RAID 1.	
+	
+	
+	
+commitlog_directory¶	
+The directory where the commit log is stored. Default locations:	
+Package installations: /var/lib/cassandra/commitlog	
+Tarball installations: install_location/data/commitlog	
+For optimal write performance, place the commit log be on a separate disk partition, or (ideally) a separate physical device from the data file directories. Because the commit log is append only, an HDD for is acceptable for this purpose.	
+	
+data_file_directories¶	
+The directory location where table data (SSTables) is stored. Cassandra distributes data evenly across the location, subject to the granularity of the configured compaction strategy. Default locations:	
+Package installations: /var/lib/cassandra/data	
+Tarball installations: install_location/data/data	
+As a production best practice, use RAID 0 and SSDs.	
+	
+saved_caches_directory¶	
+The directory location where table key and row caches are stored. Default location:	
+Package installations: /var/lib/cassandra/saved_caches	
+Tarball installations: install_location/data/saved_caches	
+	
+	
+	
+So to summarize, if you use a different device for your CommitLogDirectory it needn't be large,	
+ but it should be fast enough to receive all of your writes (as appends, i.e., sequential i/o).	
+ Then, use one or more devices for DataFileDirectories and make sure they are both large enough to house all of your data, 	
+and fast enough to both satisfy reads that are not cached in memory and to keep up with flushing and compaction.	
+	
+官网推荐：	
+commitlog_directory¶	
+	For optimal write performance, place the commit log be on a separate disk partition, or (ideally) a separate physical device from the data file directories.
+	
+data_file_directories¶	
+	The directory location where table data (SSTables) is stored. Cassandra distributes data evenly across the location, subject to the granularity of the configured compaction strategy. Default locations:
+	Package installations: /var/lib/cassandra/data
+	Tarball installations: install_location/data/data
+	As a production best practice, use RAID 0 and SSDs.
+	
+  cassandra home      : /appsrv/cassandra	
+  cassandra data home : /log_data	
+  cassandra data      : /log_data/data 	
+  cassandra commitlog : /log_data/commitlog	
+	
+建议如果可以的话，吧commitlog放单独的硬盘，或者系统盘再分一个区挂载	
+log_data 只存放Cassandra 的data	
+	
+num_tokens: 256 虚拟节点使用的是默认的256	
+单个数据中心的所有节点的虚拟节点会随机分布在哈希环上。	
+如果1个数据中心有3个节点，每个节点的虚拟节点是256，那么哈希环会被平均分成256*3份。每一份也称为一个哈希范围。每个节点虚拟节点的哈希范围不是连续。	
+最多可以扩充到256*3个节点,每个节点256个虚拟节点够用了	
+	
+	
+	
+./zkCli.sh -server 122.144.167.93:12181	
+	
+	
+bin/zkServer.sh start	
+

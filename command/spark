@@ -1,0 +1,13 @@
+ - master : start(masterIp)
+     /was/spark/sbin/start-master.sh
+    
+   - master : stop(masterIp)
+     /was/spark/sbin/stop-master.sh
+            or
+     kill -9 PID
+
+   - slave : start()
+     /appsrv/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://workIp:7077  -c 8 -m 20G &
+     /appsrv/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://workIp:7077  -c 8 -m 20G &
+   - slave : stop()
+     kill -9  PID

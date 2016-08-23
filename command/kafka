@@ -2,22 +2,22 @@ start
 bin/kafka-server-start.sh config/server.properties &
 
 normal
-bin/kafka-topics.sh --describe --zookeeper 122.144.134.67:2181 --topic ml_ad_exposure_log
-bin/kafka-console-producer.sh --broker-list 122.144.134.67:9092 --topic ml_ad_install_log
-bin/kafka-topics.sh --delete --zookeeper 122.144.134.67:2181 --topic ml_ad_exposure_log
-bin/kafka-topics.sh --create --zookeeper 122.144.134.67:2181 --replication-factor 2 --partitions 4 --topic ml_ad_install_log
-bin/kafka-topics.sh --list --zookeeper 122.144.134.67:2181
+bin/kafka-topics.sh --describe --zookeeper ip:2181 --topic ml_ad_exposure_log
+bin/kafka-console-producer.sh --broker-list ip:9092 --topic ml_ad_install_log
+bin/kafka-topics.sh --delete --zookeeper ip:2181 --topic ml_ad_exposure_log
+bin/kafka-topics.sh --create --zookeeper ip:2181 --replication-factor 2 --partitions 4 --topic ml_ad_install_log
+bin/kafka-topics.sh --list --zookeeper ip:2181
 
 
 JBOD
 http://baike.baidu.com/link?url=94WnPneHN5Pl8G7K45NvzQdQLUBTMLMxAVRBUblx1OYQUOxAKrdcQVgtJbKkvkg3JC2qD_SxI2yHifvs1IoSha
 
- bin/kafka-consumer-offset-checker.sh --zookeeper 122.144.134.67:2181 --group kafkaGroup2  --topic ml_test
+ bin/kafka-consumer-offset-checker.sh --zookeeper ip:2181 --group kafkaGroup2  --topic ml_test
 
 kafak monit:
 java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp KafkaOffsetMonitor-assembly-0.2.0.jar \
      com.quantifind.kafka.offsetapp.OffsetGetterWeb \
-     --zk 122.144.134.67:2181,122.144.134.67:2182,122.144.134.67:2183 \
+     --zk ip:2181,ip:2182,ip:2183 \
      --port 8086 \
      --refresh 10.seconds \
      --retain 2.days &

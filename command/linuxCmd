@@ -1,1 +1,51 @@
  ps2 -auxww |   grep was3
+grep -r '000000004a7018db014a7a4671075bf7'$'\t''7'$'\t''fa1006bc4a5d921b014a76e243595524'
+
+:set fileformat=unix
+
+
+LINUX通过下面的命令可以开启允许对外访问的网络端口：
+
+/sbin/iptables -I INPUT -p tcp --dport 8000 -j ACCEPT #开启8000端口
+
+/etc/rc.d/init.d/iptables save #保存配置
+
+/etc/rc.d/init.d/iptables restart #重启服务
+
+查看端口是否已经开放
+
+/etc/init.d/iptables status
+
+
+
+
+1) 重启后生效
+开启： chkconfig iptables on
+关闭： chkconfig iptables off
+
+2) 即时生效，重启后失效
+开启： service iptables start
+关闭： service iptables stop 
+
+
+
+
+
+30 4 * * 1 . /etc/profile;/bin/sh /home/spark/ml-schedulers/bin/contributed_users_collector.sh
+
+10 3 * * * . /etc/profile;/bin/sh /home/spark/ml-schedulers/bin/ad_action_statistics_collector.sh 116
+
+
+ ps -aux | grep "2929"
+检查ssh端口是否开发
+nmap -p 2929 122.144.167.91
+
+
+从一个文件剔除另一个文件重复的内容
+comm -23 <(sort backUser_5.txt|uniq) <(sort backUser_5_1.txt|uniq) > retain.txt
+
+jiao ji
+comm -12 <(sort a.txt|uniq ) <(sort b.txt|uniq )  
+
+打开文件
+nautilus  

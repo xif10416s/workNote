@@ -49,3 +49,7 @@ comm -12 <(sort a.txt|uniq ) <(sort b.txt|uniq )
 
 打开文件
 nautilus  
+
+找出大文件
+find . -type f -size +800M  -print0 | xargs -0 ls -l
+find . -type f -size +800M  -print0 | xargs -0 du -h

@@ -1,4 +1,5 @@
 theme: jekyll-theme-cayman
-markdown: redcarpet
-redcarpet:
-    extensions: [ "fenced_code_blocks", "hard_wrap","autolink", "tables", "strikethrough", "superscript", "with_toc_data", "highlight", "prettify","no_intra_emphasis"]
+highlighter: rouge
+markdown: kramdown
+kramdown:
+  input: GFM

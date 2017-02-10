@@ -1,10 +1,4 @@
 #概述
-##基本流程
-![](images/1.jpg)
-![](images/2.png)
-##driver worker 通信关系
-![](images/3.jpg)
-
 ##spark 基础
 ###RDD
 *   resillient distributed dataset 弹性分布式数据集

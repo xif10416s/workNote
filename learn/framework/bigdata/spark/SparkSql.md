@@ -168,7 +168,7 @@
                         *   `buffer.init(index, Array(iter))`
                     +   3.2.1.1.4.5   生成新的Iterator，next方法重写为buffer.next()
                         *   buffer.next()也就是生成代码类GeneratedIterator的processNext方法，包含了生成的处理逻辑代码
-            -   3.2.1.2.   执行Rdd转换操作，按格式将RDD[InternalRow]转换为RDD[Array[Byte]],既java object对象转为字节：</br>
+            -   3.2.1.2.   执行Rdd转换操作，按格式将RDD[InternalRow]转换为RDD[Array[Byte]],既java object对象转为字节，因为rdd处理时使用的是Byte数组，序列化和传输速度快：</br>
                 [size] [bytes of UnsafeRow] [size] [bytes of UnsafeRow] ... [-1]
                 +   buffer =4k： </br>
                 `val buffer = new Array[Byte](4 << 10)  // 4K`
@@ -177,7 +177,7 @@
         -   3.2.2.   运行job,遍历每个partion的Iterator,遍历每个元素调用next方法，执行生成代码的逻辑，获取返回数组,主要是RDD执行逻辑FileScanRDD:
             +   `val res = sc.runJob(childRDD,
         (it: Iterator[Array[Byte]]) => if (it.hasNext) it.next() else Array.empty, p)`            
-        -   3.2.3.  将返回数组的每个元素从byte数组解码成java对象
+        -   3.2.3.  将返回数组的每个元素从byte数组解码成java对象InternalRow
             +   `res.foreach { r =>
         decodeUnsafeRows(r.asInstanceOf[Array[Byte]]).foreach(buf.+=)
         }`     
@@ -187,7 +187,8 @@
     } else {
       buf.toArray
     }`
-
+    -   3.3   InternalRow 转出Java类型，返回数组，collect执行完成
+        +   `map(boundEnc.fromRow)`
     
 
 

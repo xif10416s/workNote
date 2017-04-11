@@ -22,5 +22,3 @@ java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp Kaf
      --refresh 10.seconds \
      --retain 2.days &
 
-
- 

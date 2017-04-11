@@ -250,6 +250,14 @@ lazy val x = { println("initializing x"); "done" }
 >import conversions.javaConversions._
 
 
+## 偏函数
+*   Created by xifei on 16-9-7.
+*   偏函数是只对函数定义域的一个子集进行定义的函数。 scala中用scala.PartialFunction[-T, +S]类来表示
+*   函数　y = f(x) ,每个ｘ都有对应的ｙ值
+*   偏函数　ｘ不一定有对应的ｙ值
+*   akka部分应用函数, 是指一个函数有N个参数, 而我们为其提供少于N个参数, 那就得到了一个部分应用函数.
+
+
 
 
 

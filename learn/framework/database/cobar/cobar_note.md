@@ -97,6 +97,7 @@
 #####cobar 事物
 ![](images/3.png)
 
+*   客户端的同一个连接ServerConnection,sql操作使用的所有节点对应的表，统一异步提交或者统一异步回滚
 
 
 

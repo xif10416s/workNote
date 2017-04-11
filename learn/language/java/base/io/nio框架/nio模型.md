@@ -23,6 +23,8 @@
     3.  处理
     4.  编码
     5.  返回
+*   网络IO服务端处理流程
+    -   
 *   分而治之是通常处理扩展的方式
     -   分解处理逻辑，变成一些小的任务，每个任务执行不需要阻塞
     -   执行任何可以执行的任务
@@ -39,7 +41,8 @@
  
 ##Reactor模式[Netty源码解读（四）Netty与Reactor模式](http://www.blogjava.net/DLevin/archive/2015/09/02/427045.html) </br>
 [reactor and nio](http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf)</br>
-[中文](http://blog.csdn.net/yangzishiw/article/details/53242103)
+[中文](http://blog.csdn.net/yangzishiw/article/details/53242103)</br>
+
 *   Reactor模式主要是提高系统的吞吐量，在有限的资源下处理更多的事情。
 *   角色
     -   Reactor EventLoop及时响应相对于的读/写IO事件，派发给合适的handler处理，
@@ -83,5 +86,5 @@ public void run() {
     -   Using Multiple Reactors  </br>
     ![](http://img.blog.csdn.net/20131104212207218?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvam51X3NpbWJh/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
         -   着客户端连接越来越多，单个Reactor线程处理IO能力会达到饱和状态，在多核机器上看到的现象是只有一个核心利用率较高，其他核心是闲置的，所以应当适当利用多核优势，扩展成匹配CPU核数的多个Reactor，达到分担IO负载的目的： 
-        -   多Reactor根据职责划分为1个mainReactor和多个subReactors，mainReactor主要负责接收客户端连接，因为TCP初始需要经历3次握手才能确认连接，这个连接过程的消耗在客户端较多时其开销是不小的，单独使用mainReactor处理保证了其他已经连接上的客户端在subReactors中不受其影响，从而快速响应处理业务，以此分摊负载并提高系统整体系能
+        -   多Reactor根据职责划分为1个mainReactor和多个subReactors，mainReactor主要负责接收客户端连接，因为TCP初始需要经历3次握手才能确认连接，这个连接过程的消耗在客户端较多时其开销是不小的，单独使用mainReactor处理保证了其他已经连接上的客户端在subReactors中不受其影响，从而快速响应处理业务，以此分摊负载并提高系统整体系能，subReactor负责相应通道的IO请求，非IO请求（具体逻辑处理）的任务则会直接写入队列，等待worker threads进行处理。
         

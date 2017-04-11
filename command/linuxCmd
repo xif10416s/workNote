@@ -53,3 +53,10 @@ nautilus
 找出大文件
 find . -type f -size +800M  -print0 | xargs -0 ls -l
 find . -type f -size +800M  -print0 | xargs -0 du -h
+
+
+查找并拷贝
+find /Users/seki/git/hsp/server-service/server-service/ad-auto-dispatch/**/ -name "*.java" -exec cp {}  "/Users/seki/Downloads/hsp_sys/自动派发系统/" \;
+
+mac brew command
+ ALL_PROXY=socks5://127.0.0.1:1080 brew install  libtool --universal

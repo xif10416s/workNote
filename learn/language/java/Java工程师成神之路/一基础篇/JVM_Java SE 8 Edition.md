@@ -16,6 +16,7 @@
 *   jvm启动时，堆内存被创建
 *   给堆使用的内存不需要连续
 *   当对象太多，堆内存管理系统无法有效管理时，OutOfMemoryError
+*   随着JIT编译器的发展，栈上分配，标量替换优化技术，使得所有对象都分配在堆上边的不那么绝对
 
 
 ###Method Area 方法区
@@ -57,11 +58,36 @@
 *   所有线程共享方法区，必须线程安全
 *   可以固定，也可以动态扩展
 *   OutOfMemoryError
+*   与永久代关系
+    -   方法区与永久代并不等价，只是HotSpot虚拟机吧GC分代收集扩展至方法区，使用永久代实现方法区，这样Hotspot的垃圾收集器可以管理这部分内存
+    -   其他虚拟机没有永久代
 
-###Run-Time Constant Pool 运行时常量池
+###Run-Time Constant Pool 运行时常量池，方法区的一部分
 *   在一个class文件中代表每个类或者每个接口运行时的常量表
 *   每个常量池在jvm方法区分配
 *   OutOfMemoryError，创建一个类或者一个接口构造常量池要求内存不够时
+
+
+###JDK1.8中JVM把String常量池移入了堆中，同时取消了“永久代”，改用元空间代替（Metaspace）
+
+###运行时常量池与Class文件常量池区别
+*   JVM对Class文件中每一部分的格式都有严格的要求，每一个字节用于存储那种数据都必须符合规范上的要求才会被虚拟机认可、装载和执行；但运行时常量池没有这些限制，除了保存Class文件中描述的符号引用，还会把翻译出来的直接引用也存储在运行时常量区
+*   相较于Class文件常量池，运行时常量池更具动态性，在运行期间也可以将新的变量放入常量池中，而不是一定要在编译时确定的常量才能放入。最主要的运用便是String类的intern()方法
+*   在方法区中，常量池有运行时常量池和Class文件常量池；
+*   Class文件中的常量池
+    -   在Class文件结构中，最头的4个字节用于存储魔数Magic Number，用于确定一个文件是否能被JVM接受，再接着4个字节用于存储版本号，前2个字节存储次版本号，后2个存储主版本号，再接着是用于存放常量的常量池，由于常量的数量是不固定的，所以常量池的入口放置一个U2类型的数据(constant_pool_count)存储常量池容量计数值。
+    -   常量池主要用于存放两大类常量：字面量(Literal)和符号引用量(Symbolic References)，字面量相当于Java语言层面常量的概念，如文本字符串，声明为final的常量值等，符号引用则属于编译原理方面的概念，包括了如下三种类型的常量
+        +   类和接口的全限定名
+        +   字段名称和描述符
+        +   方法名称和描述符
+*   方法区中的运行时常量池
+    -   运行时常量池是方法区的一部分。
+    -   CLass文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译期生成的各种字面量和符号引用，这部分内容将在类加载后进入方法区的运行时常量池中存放。
+    -   运行期间也可能将新的常量放入池中，这种特性被开发人员利用比较多的就是String类的intern()方法。
+
+###直接内存
+*   不是虚拟机运行时的一部分
+*   NIO中，基于Channel与Buffer的IO,使用native函数直接分配堆外内存，通过java堆中DirectByteBuffer对象作为这块内存的应用进行操作
 
 
 ###Frames
@@ -71,9 +97,7 @@
 *   线程的栈分配frame
 *   结构：{Frame [ReturnValue] [LocalVariables[][][][]...] [OperandStack [][][]...] [ConstPoolRef] }
 
-###reference
-*   http://blog.jamesdbloom.com/JVMInternals.html
-*   http://www.cnblogs.com/caca/p/jvm_stack_frame.html
+
 
 ###local variables
 *   每个frame包含一组变量称为本地变量
@@ -184,6 +208,7 @@
     -   signal dispatcher Thread，接受信号，发送给jvm处理
 *   每个线程都有的组件：
     -   program counter(PC)
+        +   程序计数器是一块较小的内存空间，看作当前线程所执行的字节码的行号指示器，字节码的解释器工作就是通过改变这个计数器的值来选取吓一跳需要执行的字节码指令，分支，循环，跳转，异常处理等功能需要依赖这个计数器
         +   每个线程有自己的pc寄存器
         +   如果当前方法不是naive方法，pc 寄存器包含了当前jvm执行指令的地址
         +   如果当前方法是native方法，pc寄存器的值不会被定义
@@ -254,10 +279,13 @@
         +   通常由native 代码实现，在 jvm 加载之前初始化
         +   负责加载基本java api，包括rt.jar
         +   只加载boot classpath发现的类，高信任度
+        +   path:jre/lib/rt.jar or Xbootclasspath 指定
     -   extension classloader
         +   加载标准扩展java api，如何 安全扩展
+        +   jre/lib/ext/*.jar or Djava.ext.dirs
     -   System classloader
         +   默认类加载，从 classpath 加载 程序类
+        +   Djava.class.path
     -   user defined classloaders
         +   用户自定义类加载
 
@@ -279,10 +307,249 @@
 
 ##JAVA class 格式
 *   每个class文件由一系列8位字节流组成
+*   u1,u2,u4代表1，2，4个无符号字节
+*   class 文件结构
+```
+ClassFile {
+              u4             magic;
+              u2             minor_version;
+              u2             major_version;
+              u2             constant_pool_count;
+              cp_info        constant_pool[constant_pool_count-1];
+              u2             access_flags;
+              u2             this_class;
+              u2             super_class;
+              u2             interfaces_count;
+              u2             interfaces[interfaces_count];
+              u2             fields_count;
+              field_info     fields[fields_count];
+              u2             methods_count;
+              method_info    methods[methods_count];
+              u2             attributes_count;
+              attribute_info attributes[attributes_count];
+}
+```
+*   表是由多个无符号数或者其代表作为数据项构成的符合数据类型，习惯以_info结尾
+    -   表用于描述有层次关系的符合结构的数据，整个class文件本质上就是一张表
+*   魔数magic number，每个class文件的头4个字节称为 ，确定整个文件是否为一个能被虚拟机接受的class文件
+    -   很多文件存储标准中都使用魔数进行身份识别
+*   5，6字节次版本，7，8字节主版本
+*   常量池  <-  在主次版本之后是常量池入口
+    -   是class文件的资源仓库，第一个表类型数据项目
+    -   常量池中的常量数量是不固定的，所以入口放置一项u2类型，代表常量池容量计数值，从1开始
+    -   第0项常量空出来表示，不引用任何一个常量池项目
+    -   其他集合类型，接口索引集合，字段表集合，方法表集合都是从0开始
+    -   存储内存
+        +   字面量literal
+            *   java中的常量，文本，final类型值
+        +   符号引用symbolic reference（编译原理）
+            *   种类
+                -   类和接口的全限定名 full  qualified name
+                -   字段的名称和描述符 descriptor
+                -   方法名和描述符
+            *   使用
+                -   虚拟机加载class文件的时候动态连接
+                -   class文件中不会保存各个方法，字段的最终内存布局信息，因此字段方法的符号引用不经过运行期转换的话无法得到正真的内存入口地址
+                -   当虚拟机运行时，需要从常量池获得对应的符号引用，再在类创建时或者运行时解析，翻译得到具体的内存地址
+    -   常量池的每一项都是一个表
+*   访问标记  <- 常量池结束后
+    -   方法里面的Java代码，经过编译器编译成字节码指令后，存放在方法属性表集合中一个名为code的属性里面，属性表作为class文件格式中最具扩展的一种数据项目
+*   ConstantValue  属性
+    -   如果同时使用final static来修饰，并且类型是基本类型或者String，就生成ConstantValue属性来初始化，如果这个宾利没有final，或者非基本类型及字符串，会使用clinit方法初始化
+*   Signature  属性
+    -   1.5以后泛型功能，记录泛型类型
+    -   Java泛型采用擦除法实现，在字节码code属性中，反省信息被擦除
+*   BootstrapMethods  属性
+    -   1.7后动态调用功能，变长属性，位于类文件的属性表中
+    -   用于保存invokedynamic指令的引导方法限定符
+    -   最多只能有一个bootstrapmethod属性
+    -   javac暂时无发生成invokedynamic指令和BootstrapMethods  属性
 
 
 
+###字节码指令
+*   操作码，opcode
+    -   一个字节长度的，代表某种特定操作含义的数字，
+*   操作数，operands 
+    -   以及跟随其后的零到多个代表次操作所需的参数
 
+##Loading, Linking, and Initializing
+*   loading
+    -   通过指定的名称从二进制文件中查找类和接口对应的二进制代码
+    -   根据二进制代码创建类或者接口
+*   linking
+    -   将类或者接口结合到JVM运行时，以便执行
+*   Initialization
+    -   执行类或者方法的初始化方法 <clinit> 
+
+###The Run-Time Constant Pool
+*   JVM维护每个类型一个的常量池
+*   JVM中运行时常量池在方法区中
+*   用于存放编译期生成的各种字面量和符号引用
+*   运行时常量池中的符号引用来自类或接口的二进制表示中的结构
+    -   类或者接口的符号引用来自于CONSTANT_Class_info结构
+        +   非数组类或者接口就是类或者接口的二进制名称
+        +   n维度的数组由n个‘[’开始，接元素的类型名称
+            *   基本类型，相应的字段描述
+            *   引用类型，L开头的二进制名称
+    -   字段的符号引用来自于CONSTANT_Fieldref_info结构
+    -   类方法的符号引用来自于CONSTANT_Methodref_info
+    -   接口方法的符号引用来自于CONSTANT_InterfaceMethodref_info
+    -   方法处理的符号引用来自于CONSTANT_MethodHandle_info
+    -   方法类型的符号引用来自于CONSTANT_MethodType_info
+    -   调用符的符号引用来自于CONSTANT_InvokeDynamic_info
+    -   string的字面量引用字符串实例，来自于CONSTANT_String_info
+    -   运行时常量值来自于CONSTANT_Integer_info, CONSTANT_Float_info, CONSTANT_Long_info, or CONSTANT_Double_info
+
+
+### jvm 启动
+*   通过 bootstrap class loader创建初始类，连接初始类，然后初始化，调用main方法
+
+
+
+###HotSpot
+*   热点代码探测
+*   通过执行计数器找出最具有编译价值的代码，然后通知jit编译器以方法为单位进行编译。
+    -   一个频繁调用的方法
+    -   循环的代码
+
+###64位jvm
+*   指针膨胀数据类型对齐，需要更多内存，相比32位多10%~30%
+*   运行速度慢于32位
+*   使用场景，需要使用大于4g内存的场合
+*   指针压缩开启，会增加执行代码数量
+
+
+###对象创建
+*   new指令，检查指令的参数在常量池中能否定位到一个类的符号引用
+*   检查这个符号引用代表的类是否被加载解析和初始化
+*   类加载检查通过后，为新对象分配内存，
+    -   对象所需的内存大小在类加载完成后可以确定
+    -   为对象分配空间的任务就是从java堆中划分一块确定大小的内存
+*   对象创建频繁，并发情况线程不安全
+    -   同步处理，cas+失败重试确保更新操作原子性
+    -   把内存分配的操作按照线程划分在不同的空间进行，每个线程在java堆中预分配一块内存，称为本地线程分配缓冲（Thread local allocation buffer , TLAB)，
+*   内存分配完成后，将分配的内存空间初始化零值（不包括对象头）
+*   对对象进行设置，是哪个类的实例，元数据信息，存放在对象头中
+*   新对象产生后，执行初始化方法
+
+
+###对象的内存结构，hotspot
+*   对象头,header
+    -   运行时数据
+        +   哈希吗，gc分代年龄，锁状态标记，线程持有的锁等
+        +   32位虚拟机长度为32bit，64位虚拟机未压缩，长度64bit
+    -   类型指针，指向对象类的元数据的指针
+*   实例数据，instance data
+    -   各种类型字段
+*   对象填充，padding
+    -   Hotspot内存管理需要起始地址是8个字节整数倍，填充补齐
+
+
+###对象的访问定位
+*   java程序需要通过栈上的reference数据来操作堆上的具体对象
+*   reference类型在java虚拟机规范中只定义了一个指向对象的引用，没有定义这个引用通过何种方式定位，访问对中的具体位置，取决于虚拟机实现
+*   主流访问方式
+    -   句柄
+        +   划分一块内存作为句柄，reference中存储的就是对象的句柄地址，句柄包含了实例数据与类型各自的具体地址信息
+        +   reference中存储的句柄地址，对象移动时只会改变句柄的实例数据指针，reference不需要修改
+    -   直接指针
+        +   速度快，节省一次指针定位的时间开销
+
+
+###GC内存管理
+####对象是否不再使用
+*   引用计数算法
+    -   给对象添加一个引用计数器，引用时加一，不用时减一
+    -   无法解决循环引用
+    -   虚拟机不是通过引用计数算法判断
+*   可达性分析算法
+    -   通过一些列gc roots的对象作为起始点，从这些节点往下搜索，搜索所走过的路径称为引用链，当一个对象到GC roots 没有任何引用链，就是不可用
+*   在Java中，可作为GC roots的对象：
+    -   虚拟机栈（栈帧中的本地变量表）中引用的对象
+    -   方法去中类静态属性引用的对象
+    -   方法区中常量引用的对象
+    -   本地方法栈中引用的对象
+
+####引用的类型
+*   强引用
+    -   只要存在，垃圾回收器不会回收对象
+*   软引用
+    -   描述一些还有用但不是必须的对象
+    -   内存不足时被回收
+*   弱引用
+    -   非必须对象
+    -   下一次垃圾收集之前可能被回收
+*   虚引用
+
+####对象回收之前要执行finalize()方法，如果重新与引用链上的任何一个对象建立关联，会被移除即将回收的队列
+
+###垃圾收集算法
+####mark-sweep 标记清除算法
+*   先标记所有需要回收的对象，标记完成后统一回收所有被标记的对象
+*   缺点  
+    -   效率低
+    -   空间碎片多
+
+####复制算法
+*   把内存划分2块，每次只用一块，当一块用完了就将还活着的复制到另一块，把原来的内存一次清理掉
+*   缺点
+    -   内存使用量小了一半
+
+####标记-整理算法 mark - compact
+*    标记对象，让所有存活对象向一端移动，直接清理边界以外的内存
+
+####分代收集算法
+*   根据对象存活周期划分几块
+    -   新生代
+        +   每次收集都有大批死去，少量存活，用复制算法，只需要付出少量存活对象的复制成本
+    -   老年代
+        +   存活率高，标记清理算法
+
+
+###垃圾收集器
+*   serial收集器
+    -   单线程一个cpu或者一条线程，必须暂停其他所有线程
+*   ParNew收集器
+    -   多线程，适用多cpu
+*   cms收集器concurrent mark sweep
+    -   获取最短回收停顿时间为目标的收集器
+    -   基于标记-清除算法
+        +   初始标记
+        +   并发标记
+        +   重新标记
+        +   并发清除
+    -   缺点
+        +   占用cpu资源，线程多
+        +   并发清理阶段用户线程运行，产生新的垃圾，在标记之后，无法处理，等下一次处理，称为浮动垃圾
+        +   空间碎片增加
+    -   g1(garbage-first)
+        +   面向服务端应用垃圾收集器。
+        +   充分利用多cpu，多核优势，使用多个cpu,缩短stop-the-world停顿时间
+        +   步骤
+            *   初始标记
+            *   并发标记
+            *   最终标记
+            *   筛选回收
+
+
+###内存分配与回收策略
+*   对象主要分配在新生代的eden区域，如果启动了本地线程分配缓冲，将按线程优先在TLAB上分配
+    -   当eden没有足够空间分配，将发起minor gc  
+*   少数情况可能直接分配在老年代
+    -   大对象直接进入老年代，如很长的字符串
+*   长期存活的对象将进入老年代，默认15次minor gc 后进入老年代
+
+
+    
+
+##reference
+*   《java虚拟机（第二版）》
+*   http://blog.csdn.net/sc313121000/article/details/40266531
+*   http://www.infoq.com/cn/articles/Invokedynamic-Javas-secret-weapon
+*   http://blog.jamesdbloom.com/JVMInternals.html
+*   http://www.cnblogs.com/caca/p/jvm_stack_frame.html
+    
 
 
 

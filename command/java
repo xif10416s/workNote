@@ -6,3 +6,7 @@ jmap -heap pid
 2.JConsole
 加jvm 启动参数即可： 
 -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=8011 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+
+
+3.java证书列表
+keytool -list -v  -keystore "$JAVA_HOME/jre/lib/security/cacerts" -storepass changeit

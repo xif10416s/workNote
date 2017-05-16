@@ -72,5 +72,5 @@
 
 ../nodetool clearsnapshot -t name mlapp
 
-./nodetool clearsnapshot -t 3c7d3cd0-2b99-11e6-a45d-9d020f71c9d1 mlapp
+./nodetool clearsnapshot -t 1491362284965-ml_ad_exposure_log mlapp
 

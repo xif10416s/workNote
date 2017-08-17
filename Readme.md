@@ -1,6 +1,6 @@
-#学习笔记
-##框架学习
-###大数据
+#   学习笔记
+##  框架学习
+### 大数据
 *   Apache Spark
     -   spark 主要内容
         +   [Spark Rdd](learn/framework/bigdata/spark/SparkRdd.md)
@@ -23,8 +23,8 @@
         +   [Spark Cassandra](learn/framework/bigdata/spark/源码/Spark Cassandra.md)
 
 
-###数据库
-####分布式数据库中间件
+### 数据库
+####    分布式数据库中间件
 *   [cobar](learn/framework/database/cobar/cobar_note.md)
 
 

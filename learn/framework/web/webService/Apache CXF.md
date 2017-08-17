@@ -1,6 +1,7 @@
 #Apache CXF
 ##[Apache CXF是什么](https://www.ibm.com/developerworks/cn/education/java/j-cxf/)
 *   Apache CXF = Celtix + XFire,开源的 Services 框架
+*   CXF 是一种基于 Servlet 技术的 SOA 应用开发框架，需要 Servlet 容器的支持。
 *   支持**JAX-WS**（Java API for XML Web Services），
     -   在 JAX-WS中，一个远程调用可以转换为一个基于XML的协议例如SOAP，在使用JAX-WS过程中，开发者不需要编写任何生成和处理SOAP消息的代码。JAX-WS的运行时实现会将这些API的调用转换成为对应的SOAP消息。
     -   优点：

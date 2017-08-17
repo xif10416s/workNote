@@ -541,6 +541,22 @@ ClassFile {
 *   长期存活的对象将进入老年代，默认15次minor gc 后进入老年代
 
 
+###加载、链接与初始化
+*   加载
+    -   1.通过一个类的全限定名来获取定义此类的二进制字节流。
+    -   2.将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。
+    -   3.在java堆中生成一个代表这个类的java.lang.Class对象，作为方法区这些数据的访问入口。 
+    -   类加载器可以大致划分为以下三类：
+        -   启动类加载器：Bootstrap ClassLoader，跟上面相同。它负责加载存放在JDK\jre\lib(JDK代表JDK的安装目录，下同)下，或被-Xbootclasspath参数指定的路径中的，并且能被虚拟机识别的类库（如rt.jar，所有的java.*开头的类均被Bootstrap ClassLoader加载）。启动类加载器是无法被Java程序直接引用的。
+        -   扩展类加载器：Extension ClassLoader，该加载器由sun.misc.Launcher$ExtClassLoader实现，它负责加载JDK\jre\lib\ext目录中，或者由java.ext.dirs系统变量指定的路径中的所有类库（如javax.*开头的类），开发者可以直接使用扩展类加载器。
+        -   应用程序类加载器：Application ClassLoader，该类加载器由sun.misc.Launcher$AppClassLoader来实现，它负责加载用户类路径（ClassPath）所指定的类，开发者可以直接使用该类加载器，如果应用程序中没有自定义过自己的类加载器，一般情况下这个就是程序中默认的类加载器。
+*   链接
+    *   为了让类或接口可以被 Java 虚拟机执行,而将类或接口并入虚拟机运行时状态的过程
+    *   解析的过程就是确保这些被引用的类能被正确的找到。解析的过程可能会导致其它的 Java类被加载。
+*   初始化
+    -   指执行类或接口的初始化方法<clinit>
+
+
     
 
 ##reference

@@ -60,3 +60,12 @@ find /Users/seki/git/hsp/server-service/server-service/ad-auto-dispatch/**/ -nam
 
 mac brew command
  ALL_PROXY=socks5://127.0.0.1:1080 brew install  libtool --universal
+
+
+创建link
+ln -s 源文件 目标文件
+
+查看操作系统：
+ head -n 1 /etc/issue
+
+ 

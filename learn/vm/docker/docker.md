@@ -1,4 +1,33 @@
 [官网](https://docs.docker.com/)
+#docker
+*   一般当人们说 “Docker”时， 他们一般指的是Docker Engine， 一个client-server 结构的应用， 包含Docker daemon，一个 用来和daemon 交互的REST API， 一个命令行应用CLI。 Docker Engine 在命令行中接收并解析、执行docker  命令， 例如: docker run <image>,  docker ps等。
+*   Docker Machine 是一个创建和管理Docker Hosts 的工具。
+    -   需要登录主机，按照主机及操作系统操作
+    -   简化部署，在本机或者云服务，只要一个命令搭建好主机
+    -   多平台docker管理
+    -   本地迁移到云端，修改一下环境变量
+*   docker结构 CS 结构：
+    -   client,负责与Docker daemo交互
+    -   Docker Host,docker 主机，可以是本地，也可以远程
+        +   docker daemon,与client交互
+        +   docker images
+            *   只读模板，可以是一个已经安装了web应用的ubuntu操作系统
+            *   images用来创建docker containers
+        +   docker registries,images库，
+        +   docker containers  
+            *   containers 类似一个目录，持有运行程序所需要的全部资源
+            *   每一个container从一个image创建
+            *   可以启动，停止等，每个container都是资源隔离安全的应用平台
+*   docker images如何工作
+    -   每个image都有一系列的层级，通过UnionFs结合成一个image
+    -   unionFs使得文件和目录独立于文件系统
+    -   docker轻量级的一个原因就是因为这些层级
+        +   更新一个应用只需要built一个新的层，而不需要像虚拟机那样替换整个image或者重新编译
+    -   所有image都从一个基础image开始，如：ubuntu image ，apache image（可以作为所有web 应用的基础）
+*   containers 如何工作：
+    -   每个container 包含一些列系统资源，用户添加文件，元数据。
+    -   images是只读的，但是运行在一个container中，就在image最上添加了一个读写层，
+
 #环境:
 1.  daocloud 加速
 2.  环境准备 
@@ -21,6 +50,8 @@
     -   ssh -p 51000 test@虚拟机IP
     -   xifei 111111
 
+
+docker run -p 9090:9090 prom/prometheus
 
 
 
@@ -73,3 +104,13 @@ bin/zkServer.sh start
 4.  test
     -   bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
     -   bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+##win10安装，toolbox
+*   替换源
+*   sudo passwd root,xifei
+*   sudo adduser xifei
+
+#Sentry Error
+*   用户id : {map[id]}
+*   应用类型 : {map[client]}
+*   项目: {map[project]}

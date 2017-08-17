@@ -1,4 +1,3 @@
-#   [什么是IO](io.md)
 *   Java中I/O操作主要是指使用Java进行输入，输出操作. 
 
 #数据流的基本概念
@@ -115,6 +114,3 @@ public class InputStreamReader extends Reader {
 
 
 
-#参考
-*   [java IO Stream详细解读](http://www.cnblogs.com/lcw/p/3499935.html)
-*   [深入分析 Java I/O 的工作机制](https://www.ibm.com/developerworks/cn/java/j-lo-javaio/index.html)

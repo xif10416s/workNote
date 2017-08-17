@@ -1,4 +1,4 @@
-#[什么是IO](learn/workNote/learn/language/java/base/io/io.md)
+#[什么是IO](io.md)
 *   Java中I/O操作主要是指使用Java进行输入，输出操作. 
 
 #数据流的基本概念

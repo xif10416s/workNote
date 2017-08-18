@@ -1,8 +1,9 @@
-#JAVA NIO
+#   JAVA NIO
+##  nio 类图
+![](../../images/nioclass.jpg)
 
 
-
-##主要组件
+##  主要组件
 *   Channels
     -    连接支持非阻塞IO的读/写的通道
 *   Buffers
@@ -12,7 +13,7 @@
 *   SelectionKeys
     -   提供IO事件状态信息和IO事件绑定功能的类
 
-##NIO基本结构
+##  NIO基本结构
 *   1 。 服务端：
     -   创建一个 Selector，注册对各种 I/O 事件的兴趣的地方，而且当那些事件发生时，就是这个对象告诉您所发生的事件。
     -   服务端socketChannel,ServerSocketChannel打开ServerSocket
@@ -33,8 +34,8 @@
 ![](../../images/1.png)
 
 
-#参考
-##[并发编程网 - ifeve.com](http://ifeve.com/java-nio-vs-io/)
-##[NIO 入门](http://www.ibm.com/developerworks/cn/education/java/j-nio/j-nio.html)
-##[理解Java NIO](https://yq.aliyun.com/articles/2371)
+#   参考
+*   [并发编程网 - ifeve.com](http://ifeve.com/java-nio-vs-io/)
+*   [NIO 入门](http://www.ibm.com/developerworks/cn/education/java/j-nio/j-nio.html)
+*   [理解Java NIO](https://yq.aliyun.com/articles/2371)
 

@@ -150,6 +150,33 @@ public class InputStreamReader extends Reader {
 *   具体过程：
     -   transferTo调用会引起DMA将文件内容复制到读缓冲区(内核空间的缓冲区)，然后数据从这个缓冲区复制到另一个与socket输出相关的内核缓冲区中。
     -   第三次数据复制就是DMA把socket关联的缓冲区中的数据复制到协议引擎上发送到网络上。
+    -   比较：
+        +   上下文切换次数： 4次 --> 2次
+        +   数据的复制次数： 4次 --> 3次  只有一次用到cpu资源 readbuffer -> socketbuffer的拷贝
+*   真正zero copy
+    -   内核为2.4或者以上版本的linux系统，socket缓冲区描述符将被用来满足这个需求
+    -   ![](../../images/zerocopy3.gif)
+    -   具体过程：
+        +   调用transferTo方法后数据被DMA从文件复制到了内核的一个缓冲区中。
+        +   数据不再被复制到socket关联的缓冲区中了，仅仅是将一个描述符（包含了数据的位置和长度等信息）追加到socket关联的缓冲区中。DMA直接将内核中的缓冲区中的数据传输给协议引擎，消除了仅剩的一次需要cpu周期的数据复制。
+*   文件传输服务器测试性能比较（内核为2.6版本的linux上运行）：
+
+
+File size  |Normal file transfer (ms)  |transferTo (ms)
+----|-----------------------|-------------------
+7MB |156    |45
+21MB    |337    |128
+63MB    |843    |387
+98MB    |1320   |617
+200MB   |2124   |1150
+350MB   |3631   |1762
+700MB   |13498  |4422
+1GB |18399  |8537   
+
+##  zero copy应用
+*   Kafka,分布式发布订阅消息系统
+*   Netty,javaNIO的框架
+
 
 
 #   什么是同步，异步，阻塞，非阻塞
@@ -268,10 +295,99 @@ public class InputStreamReader extends Reader {
 
 
 ##  Java BIO、NIO、AIO 
+###  BIO
+*   同步并阻塞，服务器实现模式为一个连接一个线程，即客户端有连接请求时服务器端就需要启动一个线程进行处理
+*   一个连接，要求Server对应一个处理线程
+*   BIO方式适用于连接数目比较小且固定的架构，这种方式对服务器资源要求比较高，并发局限于应用中，JDK1.4以前的唯一选择，但程序直观简单易理解。 
+```
+            server = new ServerSocket(port);  
+            System.out.println("服务器已启动，端口号：" + port);  
+            //通过无线循环监听客户端连接  
+            //如果没有客户端接入，将阻塞在accept操作上。  
+            while(true){  
+                Socket socket = server.accept();  
+                //当有新的客户端接入时，会执行下面的代码  
+                //然后创建一个新的线程处理这条Socket链路  
+                new Thread(new ServerHandler(socket)).start();  
+            }  
+```
 
+### NIO
+*   I/O复用,同步非阻塞
+*   NIO的最重要的地方是当一个连接创建后，不需要对应一个线程，这个连接会被注册到多路复用器上面，所以所有的连接只需要一个线程就可以搞定，当这个线程中的多路复用器进行轮询的时候，发现连接上有请求的话，才开启一个线程进行处理，也就是一个请求一个线程模式。
+*   NIO方式适用于连接数目多且连接比较短（轻操作）的架构，比如聊天服务器，并发局限于应用中，编程比较复杂，JDK1.4开始支持。
 
+```
+        Selector selector = Selector.open();
+        //打开ServerSocketChannel，监听客户端连接
+        ServerSocketChannel ssc = ServerSocketChannel.open();
+        // OP_ACCEPT在新的连接建立时所发生的事件。这是适用于 ServerSocketChannel 的唯一事件类型。
+        // SelectionKey 代表这个通道在此 Selector 上的这个注册。
+        ssc.register(selector, SelectionKey.OP_ACCEPT);
+        while (true) {
+            // 调用 Selector 的 select() 方法。这个方法会阻塞，直到至少有一个已注册的事件发生。
+            int num = selector.select();
+            // 遍历所有key
+            Set selectedKeys = selector.selectedKeys();
+            Iterator it = selectedKeys.iterator();
+            while (it.hasNext()) {
+                SelectionKey key = (SelectionKey) it.next();
+                if ((key.readyOps() & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) {
+                    // 客户端连接状态
+                    ServerSocketChannel ssc2 = (ServerSocketChannel) key.channel();
+                    SocketChannel sc = ssc2.accept();
+                    sc.configureBlocking(false);
+                    // 给客户端连接的新channel 注册 读取事件
+                    SelectionKey newKey = sc.register(selector, SelectionKey.OP_READ);
+                    it.remove();
+                    System.out.println("Got connection from " + sc);
+                } else if ((key.readyOps() & SelectionKey.OP_READ) == SelectionKey.OP_READ) {
+                    // 读取事件
+                    SocketChannel sc = (SocketChannel) key.channel();
+                    。。。。
+                    it.remove();
+                }
+            }
+
+```
+
+## AIO
+*   异步非阻塞IO，一个有效的请求一个线程
+*   异步的套接字通道时真正的异步非阻塞I/O，对应于UNIX网络编程中的事件驱动I/O（AIO）
+*   AIO方式使用于连接数目多且连接比较长（重操作）的架构，比如相册服务器，充分调用OS参与并发操作，编程比较复杂，JDK7开始支持。 
+*   实现
+    -   windows上，AIO的实现是通过IOCP来完成的
+    -   在linux上，AIO的实现是通过epoll来完成的
+
+```
+AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(4));
+        AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open(group).bind(new InetSocketAddress("0.0.0.0", 8013));
+        // 回调函数
+        server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>() {
+            @Override
+            public void completed(AsynchronousSocketChannel result, Void attachment) {
+                server.accept(null, this); // 接受下一个连接
+                try {
+                     String now = new Date().toString();
+                     ByteBuffer buffer = encoder.encode(CharBuffer.wrap(now + "\r\n"));
+                    //result.write(buffer, null, new CompletionHandler<Integer,Void>(){...}); //callback or
+                    Future<Integer> f = result.write(buffer);
+                    f.get();
+                    System.out.println("sent to client: " + now);
+                    result.close();
+                } catch (IOException | InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void failed(Throwable exc, Void attachment) {
+                exc.printStackTrace();
+            }
+        });
+```
 
 #   参考
+*   [https://www.ibm.com/developerworks/linux/library/j-zerocopy/](https://www.ibm.com/developerworks/linux/library/j-zerocopy/)
 *   [http://www.cnblogs.com/metoy/p/4033366.html](http://www.cnblogs.com/metoy/p/4033366.html)
 *   [http://www.jianshu.com/p/dfd940e7fca2](http://www.jianshu.com/p/dfd940e7fca2)
 *   [http://www.jianshu.com/p/a6a38ed93fc2](http://www.jianshu.com/p/a6a38ed93fc2)

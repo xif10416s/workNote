@@ -1,7 +1,5 @@
 #JAVA NIO
-##[并发编程网 - ifeve.com](http://ifeve.com/java-nio-vs-io/)
-##[NIO 入门](http://www.ibm.com/developerworks/cn/education/java/j-nio/j-nio.html)
-##[理解Java NIO](https://yq.aliyun.com/articles/2371)
+
 
 
 ##主要组件
@@ -34,4 +32,9 @@
 
 ![](../../images/1.png)
 
+
+#参考
+##[并发编程网 - ifeve.com](http://ifeve.com/java-nio-vs-io/)
+##[NIO 入门](http://www.ibm.com/developerworks/cn/education/java/j-nio/j-nio.html)
+##[理解Java NIO](https://yq.aliyun.com/articles/2371)
 

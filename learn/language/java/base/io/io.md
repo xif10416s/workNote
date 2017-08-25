@@ -1,8 +1,7 @@
 #   I/O
-*   Java中I/O操作主要是指使用Java进行输入，输出操作. 
-*   在 Java 编程中，直到最近一直使用 流 的方式完成 I/O。所有 I/O 都被视为单个的字节的移动，通过一个称为 Stream 的对象一次移动一个字节byte。流 I/O 用于与外部世界接触。它也在内部使用，用于将对象转换为字节，然后再转换回对象。
-*   流与块的比较
-    -   原来的 I/O 库(在 java.io.*中) 与 NIO 最重要的区别是数据打包和传输的方式。正如前面提到的，原来的 I/O 以流的方式处理数据，而 NIO 以块的方式处理数据。
+*   I/O（英语：Input/Output），即输入/输出，通常指数据在内部存储器和外部存储器或其他周边设备之间的输入和输出。
+*   在 Java 编程中，直到最近一直使用 流 的方式完成 I/O。所有 I/O 都被视为单个的字节的移动，通过一个称为 Stream 的对象一次移动一个字节byte。
+
 
 
 #   数据流的基本概念
@@ -18,7 +17,7 @@
 
 
 #   流的分类
-*   根据流的来源分：结点流(原始流)，过滤器(链接流)
+*   根据流的来源分：结点流(原始流)，处理流(链接流)
     -   结点流(原始流)：直接从指定的位置（如磁盘文件或内存区域）读或写，这类流称为结点流(node stream)
         +   ByteArrayInputStream：为多线程的通信提供缓冲区操作功能，接收一个Byte数组作为流的源。
         +   FileInputStream:建立一个与文件有关的输入流。接收一个File对象作为流的源。
@@ -27,8 +26,12 @@
     -   过滤器(链接流)：其它的流，过滤器输入流往往是以其它输入流作为它的输入源，经过过滤或处理后再以新的输入流的形式提供给用户，过滤器输出流的原理也类似。 
         +   FilterInputStream称为过滤输入流，它将另一个输入流作为流源。这个类的子类包括以下几种：
             *   BufferedInputStream：用来从硬盘将数据读入到一个内存缓冲区中，并从缓冲区提供数据。
+                *   支持 buf 缓冲
+                *   支持 mark , reset 可重复读取功能
             *   DataInputStream：提供基于多字节的读取方法，可以读取原始类型的数据。
+                -   支持读取java 基本类型的方法，readBoolean，readShort，readInt。。  
             *   LineNumberInputStream：提供带有行计数功能的过滤输入流。
+                -   支持读取当前行号
             *   PushbackInputStream：提供特殊的功能，可以将已经读取的字节“推回”到输入流中。
         +   装饰器模式的应用： </br>![](../../images/stream_decorators.JPG)
             *   FilterInputStream继承了InputStream,也引用了InputStream,而它有四个子类,这就是所谓的Decorator模式
@@ -107,7 +110,7 @@ public class InputStreamReader extends Reader {
             +   所以 ServerSocket 所关联的列表中每个数据结构，都代表与一个客户端的建立的 TCP 连接。
         +   backlog 参数，ServerSocket初始化是可以指定，默认50
             *   一个队列的最大长度，服务端监听端口，等待客户端连接，客户端连接到来时先进入该队列，accept()方法从里面取出连接处理返回一个新的socket与客户端socket通信
-            *   如果客户端并发过高，accept来不及处理，导致等待accept处理的连接超过指定的队列长度，和客户端就会java.net.ConnectException: Operation timed out
+            *   如果客户端并发过高，accept来不及处理，导致等待accept处理的连接超过指定的队列长度，客户端就会java.net.ConnectException: Operation timed out
 *   数据传输
     -   连接已经建立成功，服务端和客户端都会拥有一个 Socket 实例，每个 Socket 实例都有一个 InputStream 和 OutputStream，正是通过这两个对象来交换数据。
     -   当 Socket 对象创建时，操作系统将会为 InputStream 和 OutputStream 分别分配一定大小的缓冲区，数据的写入和读取都是通过这个缓存区完成的。
@@ -121,6 +124,8 @@ public class InputStreamReader extends Reader {
     -   网络传输： Socket.send(socket,buf,len);
 *   经历四次用户态和内核态的切换以及四次的数据复制操作。
 *   传统的数据复制方式
+    -   DMA copy: 是内存到内存，会大大提升内存拷贝的速度。
+    -   CPU copy: 用户空间和内核空间内存的拷贝，消耗cpu,速度慢
     -   ![](../../images/normalio.gif)
 *   传统方式的上下文切换过程
     -   ![](../../images/normalio2.gif)

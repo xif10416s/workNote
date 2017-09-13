@@ -68,4 +68,26 @@ ln -s 源文件 目标文件
 查看操作系统：
  head -n 1 /etc/issue
 
- 
+
+ Ubuntu查看端口使用情况，使用netstat命令：
+
+    查看已经连接的服务端口（ESTABLISHED）
+
+    netstat -a
+
+    查看所有的服务端口（LISTEN，ESTABLISHED）
+netstat -ap
+
+探测UDP端口通不通，使用如下参数：
+nc -vuz 112.91.151.10 4500
+
+
+gzip -dc myfile.gz | grep abc
+gzip -dc default.2017-09-05.log.gz | grep "用户CA信息保存出错"
+
+mac
+shandsocks5 代理
+http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/
+ /usr/local/Cellar/privoxy/3.0.26/sbin/privoxy --no-daemon /usr/local/etc/privoxy/config
+
+

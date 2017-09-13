@@ -9,3 +9,5 @@
     -   docker load -i myubuntu.tar.gz
 *   登录
     -   ssh xifei@192.168.70.176 -p 21001
+*   启动内存
+    -   -m --memory

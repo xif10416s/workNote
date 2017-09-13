@@ -1,11 +1,11 @@
 #Resilient Distributed Datasets (RDDs)
 ##基本流程
-![](images/1.jpg)
-![](images/2.png)
+![](../images/1.jpg)
+![](../images/2.png)
 ##driver worker 通信关系
-![](images/3.jpg)
+![](../images/3.jpg)
 ###rdd执行时序图
-![](images/rdd.jpg)
+![](../images/rdd.jpg)
 
 ###概述
 *   *1.*   构造RDD,从不同的数据源加载数据

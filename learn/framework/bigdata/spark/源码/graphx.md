@@ -3,10 +3,10 @@
 *   Table
     -   Vertex Property Table和Edge Property Table等的组合
     -   继承了Spark RDD的API(fiter,map等)。
-![](images/5.png)
+![](../images/5.png)
 *   Graph
     -   reverse/subgraph/mapV(E)/joinV(E)/mrTriplets等操作
-![](images/6.png)
+![](../images/6.png)
 *   graphx借鉴powerGraph，使用的是vertexcut(点分割)方式存储图
 *   图存储模式
     -   边分割

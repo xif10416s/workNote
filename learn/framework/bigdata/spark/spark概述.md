@@ -1,5 +1,5 @@
 #概述
-##spark 基础
+##spark 基础  --mvn  -DskipTests clean package -rf :spark-core_2.11
 ###RDD
 *   resillient distributed dataset 弹性分布式数据集
     -    分布式内存的抽象
@@ -15,10 +15,10 @@
     -    可对数据记录按key进行分区
     -    提供了粗粒度的转换操作
     -    数据存储在内存中，保证了低延迟性
-*   RDD依赖--看父RDD被多少个子RDD依赖
+*   RDD依赖--
     -    宽依赖，子RDD对父RDD中的所有data partition都有依赖
             -    一个父RDD的一个分区对应一个子RDD的多个分区
-        -   窄依赖，子RDD依赖于父RDD中固定的data partition
+    -   窄依赖，子RDD依赖于父RDD中固定的data partition
             -   一个父RDD的一个分区最多被一个子RDD引用
 *   RDD数据存储管理
     -    RDD理解为分布在集群上的大的数组
@@ -38,6 +38,7 @@
 ##SparkContext
 *   Spark 应用程序的入口，负责调度各个运算资源，协调各个 Worker
 Node 上的 Executor
+*   网络通信，分布式部署，消息通信，存储，计算，缓存
 
 ##Job 
 *    一个action生成一个job

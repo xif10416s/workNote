@@ -1,5 +1,5 @@
-#Apache CXF
-##[Apache CXF是什么](https://www.ibm.com/developerworks/cn/education/java/j-cxf/)
+#   Apache CXF
+##  [Apache CXF是什么](https://www.ibm.com/developerworks/cn/education/java/j-cxf/)
 *   Apache CXF = Celtix + XFire,开源的 Services 框架
 *   CXF 是一种基于 Servlet 技术的 SOA 应用开发框架，需要 Servlet 容器的支持。
 *   支持**JAX-WS**（Java API for XML Web Services），
@@ -33,6 +33,32 @@
         -   wsdl -> java bean
 *   支持RESTful services
     -   使用http 绑定
+
+##  spring web 集成
+### web.xml
+*   `org.apache.cxf.transport.servlet.CXFServlet`
+    -   loadBus,加载bus ,SpringBus
+        +    `<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown"/>` 配置在META-INF/cxf/cxf.xml
+
+### org.apache.cxf.bus.spring.SpringBus
+*   extensions
+*   in
+*   out
+
+
+### Interceptors and Phases
+*   拦截器
+*   分为输入拦截器，输出拦截器
+*   分为不同的阶段，也就是执行的顺序
+*   定义两个方法，一个处理消息 handleMessage， 一个是处理错误 handleFault。别看Interceptor这么简单，这里需要提醒注意的是，在实行具体的Interceptor的这两个方法中，千万别调用Interceptor内部的成员变量。这是由于Interceptor是面向消息来进行处理的，每个Interceptor都有可能运行在不同的线程中，如果调用了Interceptor中的内部成员变量，就有在Interceptor中造成临界资源的访问的情况，而这时的Interceptor也就不是线程安全的Interceptor了。
+
+### Features in CXF
+*   adding capabilities to a Server, Client or Bus ， 添加功能
+
+
+org.apache.cxf.continuations
+
+
 
 
 

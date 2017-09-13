@@ -6,7 +6,7 @@
 4.  可以被其他高级算法使用如graph,machine learning
 
 ##基本流程
-![](images/4.png)
+![](../images/4.png)
 
 ###以json文件为例子：对json文件内容进行查询过滤操作
 -   1 .    Client 端 读取json文件转换为Dataframe : </br>

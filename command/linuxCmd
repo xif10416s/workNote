@@ -90,4 +90,15 @@ shandsocks5 代理
 http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/
  /usr/local/Cellar/privoxy/3.0.26/sbin/privoxy --no-daemon /usr/local/etc/privoxy/config
 
+1，禁止.DS_store生成：打开   “终端” ，复制黏贴下面的命令，回车执行，重启Mac即可生效。defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool TRUE2，恢复.DS_store生成： defaults delete com.apple.desktopservices DSDontWriteNetworkStores
 
+作者：Marsokit
+链接：https://www.zhihu.com/question/20345704/answer/19471793
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+给普通用户加sudo权限 
+切换到root用户下，cd root,运行visudo命令,visudo命令是用来编辑修改/etc/sudoers配置文件
+
+kill 
+ps -ef |grep hello |awk '{print $2}'|xargs kill -9

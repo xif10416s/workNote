@@ -11,3 +11,9 @@
      /appsrv/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://workIp:7077  -c 8 -m 20G &
    - slave : stop()
      kill -9  PID
+
+## maclocal:
+* master
+  - /Users/seki/git/learn/spark/sbin/start-master.sh 
+* salve
+  - /Users/seki/git/learn/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://xifeideMacBook-Pro.local:7077  -c 2 -m 1G &

@@ -11,3 +11,10 @@
     -   ssh xifei@192.168.70.176 -p 21001
 *   启动内存
     -   -m --memory
+*   压缩image,http://jasonwilder.com/blog/2014/08/19/squashing-docker-images/
+    -   docker save 49b5a7a88d5 | sudo docker-squash -t jwilder/whoami:squash | docker load
+    -   https://github.com/jwilder/docker-squash
+    -   sudo ./docker-squash -i spark2.2.tar.gz - o spark.tar.gz
+*   docker machin 清理
+    -   http://www.cnblogs.com/junneyang/p/6133157.html
+    -   docker system prune -a

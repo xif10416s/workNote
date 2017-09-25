@@ -107,4 +107,5 @@ ChildId，我在调用谁?
 *   一个小时精度，不能看某次请求
 *   cxf集成复杂
 
+http://192.168.2.100:2281/cat/r/m/test-hry-openapi-c0a85151-418253-20122?domain=test-hry-openapi&waterfall=false
             

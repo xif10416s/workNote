@@ -85,12 +85,17 @@ nc -vuz 112.91.151.10 4500
 gzip -dc myfile.gz | grep abc
 gzip -dc default.2017-09-05.log.gz | grep "用户CA信息保存出错"
 
+gzip -dc /opt/logs/java/hry-contract/history/default.2017-10-08.log.gz | grep "上传合同至法大大"
+
 mac
 shandsocks5 代理
 http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/
  /usr/local/Cellar/privoxy/3.0.26/sbin/privoxy --no-daemon /usr/local/etc/privoxy/config
 
 1，禁止.DS_store生成：打开   “终端” ，复制黏贴下面的命令，回车执行，重启Mac即可生效。defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool TRUE2，恢复.DS_store生成： defaults delete com.apple.desktopservices DSDontWriteNetworkStores
+
+
+system_profiler SPUSBDataType
 
 作者：Marsokit
 链接：https://www.zhihu.com/question/20345704/answer/19471793

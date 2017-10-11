@@ -17,3 +17,7 @@
   - /Users/seki/git/learn/spark/sbin/start-master.sh 
 * salve
   - /Users/seki/git/learn/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://xifeideMacBook-Pro.local:7077  -c 2 -m 1G &
+
+#  start in idea
+   *  Master.main
+   *  Worker.main spark://xifeideMacBook-Pro.local:7077  -c 2 -m 1G

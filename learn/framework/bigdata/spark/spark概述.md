@@ -35,6 +35,41 @@
 *   计算一组数据的逻辑计划
 
 
+##  Understanding closures 
+*   闭包就是能够读取其他函数内部变量的函数
+*   所有在driver端中，Transformations 和 Actions 使用的函数f都是要被序列化发送到woker的executor中调用执行
+    -   任何定义函数还引用了driver程序内部的变量都是有问题的，因为实际上函数执行的环境不再driver中
+
+```
+var counter = 0 // counter是driver中定义的变量
+var rdd = sc.parallelize(data)
+
+// Wrong: Don't do this!!
+rdd.foreach(x => counter += x) // foreach 中函数执行的环境在worker的executor中并没有counter这个变量
+```
+
+##  Dependency 依赖
+![](./images/dep.jpg)
+### NarrowDependency窄依赖
+*   窄依赖是指父RDD的每个分区只被子RDD的一个分区所使用，子RDD分区通常对应常数个父RDD分区(O(1)，与数据规模无关)
+    -   窄依赖允许在一个集群节点上以流水线的方式（pipeline）计算所有父分区
+### ShuffleDependency
+*   宽依赖是指父RDD的每个分区都可能被多个子RDD分区所使用，子RDD分区通常对应所有的父RDD分区(O(n)，与数据规模有关)
+    -   宽依赖往往对应着shuffle操作，需要在运行过程中将同一个父RDD的分区传入到不同的子RDD分区中，中间可能涉及多个节点之间的数据传输
+
+
+## stage
+*   一组task的集合，使用相同计算函数 并行计算。
+*   作为某个job中运算的一部分，所有task都有相同的shuffle依赖
+*   stage的划分是按照shuffle为边界
+
+### ShuffleMapStage
+*   当执行如groupby操作时，需要用到当前rdd的所有partition中的数据，所以需要移动所有partition中的数据，
+*   执行后生成映射输出内容，提供给 reduce任务获取
+
+### ResultStage
+*   在rdd的所有partitions上应用相同的函数，计算action的结果
+
 ##SparkContext
 *   Spark 应用程序的入口，负责调度各个运算资源，协调各个 Worker
 Node 上的 Executor

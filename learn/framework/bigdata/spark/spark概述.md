@@ -1,6 +1,6 @@
-#概述
-##spark 基础  --mvn  -DskipTests clean package -rf :spark-core_2.11
-###RDD
+#   概述
+##  spark 基础  --mvn  -DskipTests clean package -rf :spark-core_2.11
+### RDD
 *   resillient distributed dataset 弹性分布式数据集
     -    分布式内存的抽象
     -    操作本地集合的方式来操作分布式数据集的抽象实现
@@ -70,12 +70,12 @@ rdd.foreach(x => counter += x) // foreach 中函数执行的环境在worker的ex
 ### ResultStage
 *   在rdd的所有partitions上应用相同的函数，计算action的结果
 
-##SparkContext
+##  SparkContext
 *   Spark 应用程序的入口，负责调度各个运算资源，协调各个 Worker
 Node 上的 Executor
 *   网络通信，分布式部署，消息通信，存储，计算，缓存
 
-##Job 
+##  Job 
 *    一个action生成一个job
 *    一个或者多个RDD的一组转换操作
 *   根据RDD依赖划分一个或者多个Stage
@@ -89,21 +89,21 @@ Node 上的 Executor
             -    Task 执行RDD中对应stage的func
             -    Task被封装好后放入Executor的线程池中执行
 
-##BlockManager
+##  BlockManager
 *   运行在所有节点（driver 和 executors）
 *   提供在各种存储（memory，disk，offheap）中存取本地和远程block接口
 *   管理RDD的物理分区,每个Block就是节点上对应的一个数据块
 
-##DAGScheduler
+##  DAGScheduler
 *   DAG --有向无环图，RDD之间的依赖关系
 *   根据Job构建基于Stage的DAG，并提交TaskScheduler
 *   计算每个任务的最佳位置
 
 
-##TaskScheduler
+##  TaskScheduler
 *   将Taskset提交给Worker node集群运行并返回结果
 
-##Application
+##  Application
 *   Spark 的应用程序，用户提交后，Spark为App分配资源，将程序转换并执行，其中Application包含一个Driver program和若干Executor
 
 ##Driver Program
@@ -124,14 +124,14 @@ Node 上的 Executor
                 -   提交Master
                     -   Master分配app到Worker并启动Driver
 
-##Executor
+##  Executor
 *   是为Application运行在Worker node上的一个进程，该进程负责运行Task，并且负责将数据存在内存或者磁盘上。每个Application都会申请各自的Executor来处理任务
 
 
-##Worker Node
+##  Worker Node
 *   集群中任何可以运行Application代码的节点，运行一个或多个Executor进程
 
-##Shuffle
+##  Shuffle
 *   把一组无规则的数据尽量转换成一组具有一定规则的数据
 *   包裹在各种需要重分区的算子之下的一个对数据进行重新组合的过程
 

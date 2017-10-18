@@ -8,7 +8,13 @@
 
 
 ### 基本处理流程
+####  基本流程
+![](../images/1.jpg)
+![](../images/2.png)
+
+#### 详细流程
 ![](../images/baseprocess.jpg)
+
 
 ###  一、[初始化sparkContext](./1-SparkContext-初始化.md)
 ```

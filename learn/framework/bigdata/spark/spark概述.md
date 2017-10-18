@@ -136,3 +136,22 @@ Node 上的 Executor
 *   包裹在各种需要重分区的算子之下的一个对数据进行重新组合的过程
 
 
+## 源码调试
+*  maven version 3.3.6以上 ，执行 package -Dmaven.test.skip=true
+*  依赖 provided 改成 complie
+*  master 启动
+    -  org.apache.spark.deploy.master.Master
+*   worker 启动
+    -   org.apache.spark.deploy.worker.Worker
+    -   spark://xifeideMacBook-Pro.local:7077  -c 2 -m 1G
+*   执行spark-examples
+    -   scope="PROVIDED" 删除
+
+
+
+
+/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/bin/java" "-cp" "/Users/seki/git/learn/spark/conf/:/Users/seki/git/learn/spark/assembly/target/scala-2.11/jars/*" "-Xmx1024M" "-Dspark.driver.port=52691" "org.apache.spark.executor.CoarseGrainedExecutorBackend" "--driver-url" "spark://CoarseGrainedScheduler@192.168.81.173:52691" "--executor-id" "0" "--hostname" "192.168.81.173" "--cores" "2" "--app-id" "app-20171018122818-0002" "--worker-url" "spark://Worker@192.168.81.173:52683"
+
+
+
+

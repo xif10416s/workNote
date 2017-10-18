@@ -87,6 +87,10 @@ gzip -dc default.2017-09-05.log.gz | grep "用户CA信息保存出错"
 
 gzip -dc /opt/logs/java/hry-contract/history/default.2017-10-08.log.gz | grep "上传合同至法大大"
 
+cat  /opt/logs/java/hry-contract/default.log | grep "^1.*调用fdd外部存在接口"
+
+gzip -dc /opt/logs/java/hry-contract/history/default.2017-10-11.log.gz | grep "^1.*调用fdd外部存在接口"
+
 mac
 shandsocks5 代理
 http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/

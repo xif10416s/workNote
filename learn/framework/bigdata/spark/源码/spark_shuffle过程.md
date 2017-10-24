@@ -1,5 +1,6 @@
 #   shuffle过程
-##  RDD#groupBy操作为例子：`val groupRdd = spark.sparkContext.parallelize(1 until n, slices).groupBy(f => f)`
+##  RDD#groupBy操作为例子：`val groupRdd = spark.sparkContext.parallelize(Seq(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3), 4).groupBy(f => f)`
+*   ![](../images/spark_shuffle_groupby.jpg)
 *   映射成key，value的pair形式，this.map(t => (cleanF(t), t))
     -   包装成 MapPartitionsRDD
 *   隐式调用，PairRDDFunctions#groupByKey
@@ -84,4 +85,53 @@
     -   合并细节，夸partition的数据如何合并
 
 
-## executor 个数 线成熟
+## BypassMergeSortShuffleWriter详解
+### 基础
+-   基于排序的，hash风格的shuffle
+-   记录被写入独立的文件，每个reduce 分区 一个 文件，每个文件的内容都是排序的
+-   最后把所有分区文件内容整体排序后合并到一个文件中
+-   所有记录不会被缓存在内存
+*   可以通过IndexShuffleBlockResolver读取文件内容
+-   因为每个partition会有单独的序列化和文件流，所以在partition过多的情况性能会下降
+
+### BypassMergeSortShuffleWriter#write
+*   生成n个临时文件 ，n为分区数,每个临时文件对应一个blockid
+    -   `Tuple2<TempShuffleBlockId, File> tempShuffleBlockIdPlusFile = blockManager.diskBlockManager().createTempShuffleBlock();`
+    -    根据File，和bolckid初始化n个 **DiskBlockObjectWriter**
+        +    每个需要处理的partition会有所有partition数量的writers,也就是说n个partition会有n*n个 DiskBlockObjectWriter
+        +    将jvm对象写入文件，运行追加内容到指定的block
+*   遍历所有rdd的partition的数据，hash[key]决定用哪个DiskBlockObjectWriter写入
+    -   partitionWriters[partitioner.getPartition(key)].write(key, record._2());
+    -   将rdd的一个partition数据写入到n个文件中去（n为partition数）
+*   刷新文件写入提交所有数据并返回写入数据的信息
+    -   commitAndGet(): FileSegment
+        +    FileSegment(val file: File, val offset: Long, val length: Long) ，文件的数据访问信息
+
+### BypassMergeSortShuffleWriter#writePartitionedFile合并之前的n个文件到一个文件
+*   合并文件，Utils.copyStream(in, out, false, transferToEnabled);
+    -   合并完成后删除之前的文件
+    -   返回每个partition的对应的写入文件的长度的数组
+*   创建索引文件，记录每个block的起始位置和长度.
+*   返回shuffle结果MapStatus，shuffle 写入完成
+
+
+## BlockStoreShuffleReader#read读取shuffle内容
+### ShuffleBlockFetcherIterator
+*   获取block的iterator,从本地或者远程获取指定分区的block数据
+*   获取当前分区的所有shuflle block信息， mapOutputTracker.getMapSizesByExecutorId(handle.shuffleId, startPartition, endPartition)
+*   initialize ，初始化
+    -   划分block,哪些需要远程获取，哪些本地获取，splitLocalRemoteBlocks
+        +   本地保存在localBlocks
+        +   远程收集在fetchRequests
+    -   拉取远程block，fetchUpToMaxBytes
+        +   results.put(new SuccessFetchResult(BlockId(blockId), address, sizeMap(blockId), buf,
+              remainingBlocks.isEmpty))
+    -   拉取本地block,fetchLocalBlocks
+        +   results.put(new SuccessFetchResult(blockId, blockManager.blockManagerId, 0, buf, false))
+
+### 合并各个task计算的相同key的结果
+*    dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
+
+
+
+   

@@ -95,6 +95,7 @@ mac
 shandsocks5 代理
 http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/
  /usr/local/Cellar/privoxy/3.0.26/sbin/privoxy --no-daemon /usr/local/etc/privoxy/config
+ 在局域网内其他主机上，代理设置为Mac的IP，端口为之前设置的8118，即可使用Mac上的shadowsocks代理。
 
 1，禁止.DS_store生成：打开   “终端” ，复制黏贴下面的命令，回车执行，重启Mac即可生效。defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool TRUE2，恢复.DS_store生成： defaults delete com.apple.desktopservices DSDontWriteNetworkStores
 

@@ -153,5 +153,8 @@ Node 上的 Executor
 /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/bin/java" "-cp" "/Users/seki/git/learn/spark/conf/:/Users/seki/git/learn/spark/assembly/target/scala-2.11/jars/*" "-Xmx1024M" "-Dspark.driver.port=52691" "org.apache.spark.executor.CoarseGrainedExecutorBackend" "--driver-url" "spark://CoarseGrainedScheduler@192.168.81.173:52691" "--executor-id" "0" "--hostname" "192.168.81.173" "--cores" "2" "--app-id" "app-20171018122818-0002" "--worker-url" "spark://Worker@192.168.81.173:52683"
 
 
+## TODO
+*   资源分配，一个job分配多少个executor
+*   stage划分
 
 

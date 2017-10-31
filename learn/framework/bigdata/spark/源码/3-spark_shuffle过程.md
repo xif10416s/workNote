@@ -1,5 +1,28 @@
 #   shuffle过程
-##  RDD#groupBy操作为例子：`val groupRdd = spark.sparkContext.parallelize(Seq(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3), 4).groupBy(f => f)`
+
+##  shuffle处理器，一共三类：
+### BypassMergeSortShuffleHandle 对应 BypassMergeSortShuffleWriter
+*   使用场景：
+    -   不需要在map端做Combine，即mapSideCombine=false
+    -   分区数小于 ： bypassMergeThreshold: Int = conf.getInt("spark.shuffle.sort.bypassMergeThreshold", 200)
+*   基本操作：
+    -   在map端写partition个文件，然后合并成一个文件
+
+### SerializedShuffleHandle 对应 UnsafeShuffleWriter
+*   使用场景：
+    -   支持序列化数据重排对象，直接操作序列化数据排序
+    -   没有定义聚合函数
+*   基本操作：
+    -   数据写入SerializationStream在直接内存中排序后写入partition个文件，最后合并成一个文件
+
+### BaseShuffleHandle 对应 SortShuffleWriter
+*   使用场景： 
+    -   不是上面2中的情况
+*   基本操作：
+
+
+
+##  RDD#groupBy操作为例子【BypassMergeSortShuffleWriter】：`val groupRdd = spark.sparkContext.parallelize(Seq(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3), 4).groupBy(f => f)`
 *   ![](../images/spark_shuffle_groupby.jpg)
 *   映射成key，value的pair形式，this.map(t => (cleanF(t), t))
     -   包装成 MapPartitionsRDD
@@ -132,6 +155,85 @@
 ### 合并各个task计算的相同key的结果
 *    dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
 
+
+
+##  SortShuffleWriter
+### ExternalSorter
+*   排序并合并相同的key的元素
+*   通过Partitioner计算key应该在哪个partiton,通过自定义的Comparator在partition内做元素的排序
+*   不断将数据放入内存buffer，在buffer中根据partitonid和key排序
+    -   需要合并相同key的操作使用PartitionedAppendOnlyMap
+        +   通过聚合函数重新计算相同key的值，然后替换
+    -   反之使用PartitionedPairBuffer
+        +   简单的添加数据
+*   当buffer内存满的时候，会刷新到文件中，文件中的内容先根据partitionid排序，相同paritionid内的元素根据key排序
+    -   对于每个文件会记录每个partition的保存元素的个数，这样就不需要保存partitionid也能区分是partition
+*   当调用iterator时，输出文件和buffer中的剩余数据会合并到一个文件中，相同的方式排序和聚合
+*   调用stop,删除临时文件
+
+### 入口函数ExternalSorter#insertAll
+*   遍历iterator数据插入buffer
+*   每次插入都会检查是否到达buffer上线，并相应的刷新到文件，清空内存
+    -   每次刷新新产生一个根据partition和key排序后的文件
+
+### buffer类型
+####    PartitionedPairBuffer，非聚合，简单追加
+*   buffer结构 => data = new Array[AnyRef](2 * initialCapacity)
+*   数据保存方式 => insert ,每次保存2个元素
+    -   第一个元素是tuple类型，key为partitionid，value为key
+        -   data(2 * curSize) = (partitionid, key.asInstanceOf[AnyRef])
+        -   partitionid的值是根据给定的partitioner通过可以计算得到，partitionid= partitioner.getPartition(key)
+    -   第二个元素为value
+        +   data(2 * curSize + 1) = value.asInstanceOf[AnyRef]
+    -   data = [(pid1,key1),value1,(pid2,key2),value2,(pid3,key3),value3,....]
+    -   当元素个数达到指定容量时候，进行扩容，扩容后的大小为当前长度的2倍
+*   内存数据排序,内存上限刷新文件时触发 => partitionedDestructiveSortedIterator
+    -   将data的数据按partitionid，相同partitionid的按key排序完成
+    -   返回iterator，读取pair值 ，Iterator[(partitinid,key),value]
+        +    val pair = (data(2 * pos).asInstanceOf[(Int, K)], data(2 * pos + 1).asInstanceOf[V])
+
+####    PartitionedAppendOnlyMap，合并相同key
+*   buffer结构 =>data = new Array[AnyRef](2 * capacity)
+*   数据保存方式 => map.changeValue((getPartition(kv._1), kv._1), update)
+    -   首先要定义更新函数 updateFunc
+        +   ` val update = (hadValue: Boolean, oldValue: C) => {
+        if (hadValue) mergeValue(oldValue, kv._2) else createCombiner(kv._2)
+      }`
+        -   对应key有值的时候合并值，没有的时候新建合并对象
+    -   key为（partitionid,key)的tuple , partitionid=partitioner.getPartition(key)
+    -   根据key计算存储位置，pos = rehash(k.hashCode) & mask
+        +   mask为data的容量大小，随机散列在data数组上
+    -   获取pos位置的key,curKey = data(2 * pos)
+        +   如果pos位置还没有key，直接保存新数据
+            *   data(2 * pos) = k
+            *   data(2 * pos + 1) = newValue.asInstanceOf[AnyRef]
+        +   如果pos位置有key,而且key一致 ，更新当前key的值
+            *   val newValue = updateFunc(true, data(2 * pos + 1).asInstanceOf[V])
+            *   data(2 * pos + 1) = newValue.asInstanceOf[AnyRef]
+        +   如果pos位置有key,但是不一致，重新计算位置
+            *   pos = (pos + delta) & mask  <= 偏移量 delta = 1
+*   排序，data上限时触发，destructiveSortedIterator
+
+
+###    合并文件和buffer中剩余的数据到一个文件，ExternalSorter#writePartitionedFile
+*   准备读取所有文件对象， val readers = spills.map(new SpillReader(_))
+*   准备buffer中的数据对象，val inMemBuffered = inMemory.buffered
+*    (0 until numPartitions).iterator.map 遍历所有partitionid
+    -    从内存buffer中取partition为p的iterator，val inMemIterator = new IteratorForPartition(p, inMemBuffered)
+    -    从分割文件中取partition为p的文件的一小批数据的iterator，readers.map(_.readNextPartition()) 
+    -    合并成所有partition的p的数据的iterator ，iterators
+    -    对这些iterator排序，放入一个heap,获取拥有最小值的iterator[通过比较iterator的第一个元素，因为所有iterator的数据已经排序]
+        +    将最小的元素写入合并文件
+        +    如果iterator还有下一个元素继续放入heap
+            *    如果iterator的批数据处理完成就读取下一批数据
+*   创建索引文件，记录每个block的起始位置和长度.
+*   返回shuffle结果MapStatus，shuffle 写入完成
+
+
+
+
+![](../images/spark_shuffle_writer.jpg)
+ 
 
 
    

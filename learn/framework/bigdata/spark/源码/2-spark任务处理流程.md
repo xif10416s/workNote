@@ -230,7 +230,7 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
 *   reduce函数首先会在work端先执行,操作对象为一个partition中的所有数据，然后在driver的合并task结果执行，操作对象为partition
 *   
 
-##  [pi计算流程mock代码，最基础的计算流程](https://github.com/xif10416s/bigData/tree/master/scalaProject/scala-test-spark2.2/src/main/scala/com/fxi/test/base/mock/simpleprocess)
+##  pi计算流程mock代码，最基础的计算流程[模拟代码地址](https://github.com/xif10416s/bigData/tree/master/scalaProject/scala-test-spark2.2/src/main/scala/com/fxi/test/base/mock/simpleprocess)
 *   map函数，reduce函数，调用流程
 *   计算结果如何合并
 *   最基础的计算流程了解

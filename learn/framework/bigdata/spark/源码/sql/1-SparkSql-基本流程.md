@@ -1,7 +1,7 @@
 ## 以json文件为例子：对json文件内容进行查询过滤操作
 -   1 .    Client 端 读取json文件转换为Dataframe : </br>
     `spark.read.json("../../spark/main/resources/people.json")`   
-    -   1.1  构建[DataSource](0-SparkSql_base.md#DataSource)对象，数据源 : </br>
+    -   1.1  构建[DataSource](0-SparkSql_base.md/#DataSource)对象，数据源 : </br>
     `DataSource.apply(sparkSession,paths = paths,..)`
     -   1.2  生成统一的数据处理对象baseRelation: [BaseRelation](#BaseRelation)，spark sql处理的数据源可以是文件系统中的json文件，纯文本文件等，也可以是关系数据库中的数据jdbc，所以需要抽象成统一的数据处理方式，知道数据结构，以及数据如何读取  ：</br>
     `DataSource#resolveRelation(): BaseRelation `

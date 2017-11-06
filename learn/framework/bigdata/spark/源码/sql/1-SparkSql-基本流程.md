@@ -1,10 +1,20 @@
 ## 以json文件为例子：对json文件内容进行查询过滤操作
+
+###  图解
+![](../../images/spark_sql_base_process.jpg)
+
+###  说明
 -   1 .    Client 端 读取json文件转换为Dataframe : </br>
     `spark.read.json("../../spark/main/resources/people.json")`   
     -   1.1  构建[DataSource](0-SparkSql_base.md/#DataSource)对象，数据源 : </br>
     `DataSource.apply(sparkSession,paths = paths,..)`
+        -   定义一个数据源，什么格式读写数据
     -   1.2  生成统一的数据处理对象baseRelation: [BaseRelation](#BaseRelation)，spark sql处理的数据源可以是文件系统中的json文件，纯文本文件等，也可以是关系数据库中的数据jdbc，所以需要抽象成统一的数据处理方式，知道数据结构，以及数据如何读取  ：</br>
     `DataSource#resolveRelation(): BaseRelation `
+        -   解析的同时会做类型推断获取schema => StructType
+            +   生成一个DataSet,执行select查询
+            +   执行dataSet获取一部分sample数据，根据json内容推断json有哪些字段是什么类型返回
+                *   会触发job任务执行
     -   1.3  将baseRelation封装成[LogicalRelation](#LogicalRelation)，主要将schema转换成 [AttributeReference](#AttributeReference) 数组
     -   1.4  将LogicalRelation封装成Dataframe,类型为Row的[Dataset](#Dataset)，先初始化一下QueryExecution检查一下是否可以执行，然后再封装Dataset: </br>
     `Dataset.ofRows(self, LogicalRelation(baseRelation))`
@@ -179,3 +189,6 @@
     }`
     -   3.3   InternalRow 转出Java类型，返回数组，collect执行完成
         +   `map(boundEnc.fromRow)`
+
+
+        

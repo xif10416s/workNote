@@ -383,6 +383,56 @@ if (conf.wholeStageEnabled) {
 *   把schema 转成attribute的集合
 
 
+## org.apache.spark.sql.catalyst.plans.physical
+#### Distribution
+*   在多台机器并行查询操作时，指定元组tuples如何在分布式中共享共通表达式
+*   有两种物理属性：
+    -   Inter-node partitioning of data（不同物理机器上的分区数据）：描述元组tuples如何在不同的物理机器集群上分区
+        +   一些操作如Aggregate，可以利用这个信息可以为分区执行本地操作，而不是从集群全局操作
+    -   Intra-partition ordering of data（内部分区数据）：某个分区的数据可能是分布式的
+        +   需要被shuffle的数据可能分布在不同机器上但是属于同一个分区
+*   分类
+    -   UnspecifiedDistribution，
+    -   AllTuples，只有一个partition,并且dataset的数据在同一个地方
+    -   ClusteredDistribution，集群中相同值的数据在同一个地方
+    -   OrderedDistribution，数据将按照排序表达式排序，
+    -   BroadcastDistribution，数据将被广播到所有节点
+
+
+####   Partitioning
+*   描述操作的输出结果如何分布到各个partition上
+*   satisfies -- 描述partitionings 与 distributions 的关系
+*   compatibleWith  -- 描述 child 输出 partitions之间的关系
+*   guarantees -- 描述 child 输出 partition 与 其他 partition的关系
+```
+*  Diagrammatically:
+ *
+ *            +--------------+
+ *            | Distribution |
+ *            +--------------+
+ *                    ^
+ *                    |
+ *               satisfies
+ *                    |
+ *            +--------------+                  +--------------+
+ *            |    Child     |                  |    Target    |
+ *       +----| Partitioning |----guarantees--->| Partitioning |
+ *       |    +--------------+                  +--------------+
+ *       |            ^
+ *       |            |
+ *       |     compatibleWith
+ *       |            |
+ *       +------------+
+
+```
+*   UnknownPartitioning
+*   RoundRobinPartitioning
+*   SinglePartition
+*   HashPartitioning
+*   RangePartitioning
+*   BroadcastPartitioning
+
+
 ##  [过去的迭代模型 =》Volcano Iterator Model](https://databricks.com/blog/2016/05/23/apache-spark-as-a-compiler-joining-a-billion-rows-per-second-on-a-laptop.html)
 [中文翻译](http://geek.csdn.net/news/detail/77005)
 

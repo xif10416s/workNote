@@ -60,7 +60,7 @@
         +   parents ： \[ShuffleMapStage\]
             *   shuffleDep :  ShuffleDependency
             *   **rdd : MapPartitionsRDD**  <-- shuffle task执行时计算的rdd
-        +   **rdd : ShuffledRDD**  <-- 计算result stage时，先计算的是ShuffledRDD
+        +   **rdd : ShuffledRDD**  <-- 计算result stage时，先计算的是ShuffleMapStage
 *   stage提交计算
     -   首先提交最父层stage, 也就是ShuffleMapStage
     -   stage 转换成一组TaskSet，每个task为ShuffleMapTask

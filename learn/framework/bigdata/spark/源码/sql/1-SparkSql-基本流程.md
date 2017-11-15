@@ -190,5 +190,113 @@
     -   3.3   InternalRow 转出Java类型，返回数组，collect执行完成
         +   `map(boundEnc.fromRow)`
 
+###  全局代码生成WholeStateCodegenExec生成代码 <== 在原始RDD基础上添加逻辑操作
+*    rdd上的操作最终就是以partition[Iterator]为单位，在每个partition上对每个元素执行逻辑操作
+*    全局代码生成 = 输入RDD[inputRDD] + Iterator Class[包含元素处理逻辑] 
+    -    在inputRDD上map 操作，将原始partition 的Iterator 转换成包含逻辑处理的新Iterator
+```
+ // rdds为inputRDD
+ rdds.head.mapPartitionsWithIndex { (index, iter) => // 遍历每个partition
+        val clazz = CodeGenerator.compile(cleanedSource) // 编译动态生成的类
+        val buffer = clazz.generate(references).asInstanceOf[BufferedRowIterator] //实例化动态类
+        buffer.init(index, Array(iter))// 初始化对象，并将partition传入
+        new Iterator[InternalRow] { // 转换成 新的 iterator
+          override def hasNext: Boolean = {
+            val v = buffer.hasNext // 给partition的每个元素执行动态代码生成的逻辑
+            if (!v) durationMs += buffer.durationMs()
+            v
+          }
+          override def next: InternalRow = buffer.next()
+        }
+```
+*   inputRDD
+    -   可以是数据源的RDD,如RowDataSourceScanExec#inputRDDs ==> rdd :: Nil
+    -   也可以是 InputAdapter的代理RDD,需要调用child#execute()获取输入RDD
+*   全局生成代码 继承自BufferedRowIterator 的迭代器
+    -   generate实例化类，相关引用传入
+    -   init初始化类，传入输入input
+    -   processNext迭代处理方法，所有生成代码produceCode执行的地方
+```
+// 处理代码结构，全局代码最底层计划会生成这个结构如：RowDataSourceScanExec，InputAdapter
+// 就是一个while循环，遍历partition的所有元素，添加逻辑代码处理这些元素
+ while ($input.hasNext()) {
+  InternalRow $row = (InternalRow) $input.next();
+  $numOutputRows.add(1);
+  ${consume(ctx, columnsRowInput, inputRow).trim}// 各个处理计划对应如何处理逻辑部分
+  if (shouldStop()) return;
+}
+```
 
+
+###   WholeStateCodegenExec 与  InputAdapter
++   在连续的支持代码生成计划顶层添加WholeStateCodegenExec物理计划
+    *   WholeStateCodegenExec表示有若干连续的几个child计划可以生成动态代码
+    *   最后一个child计划的 doProduce 构造一个while结构的代码块 并调用parent的doConsume,如：RowDataSourceScanExec，InputAdapter
++   如果不支持代码生成，则在上层添加InputAdapter层 （如果是第一层不支持不添加） 
+    *   在代码生成过程中起到承上启下作用
+        -   结束上一层WholeStateCodegenExec（也就是doProduce 构造一个while结构的代码块
+        -   inputRdds调用child#execute，将调用链传递给child,
+    +   通过InputAdapter，可以有多层WholeStateCodegenExec
+```
+物理计划：
+sparkPlan:SupportCodegen
+  + child:SupportCodegen
+    + child:SupportCodegen
+     + child:UnSupportCodegen
+      + child:SupportCodegen
+         + child:UnSupportCodegen
+           + child:SupportCodegen
+可执行物理计划 ，全局代码生成计划插入后：
+ sparkPlan:WholeStateCodegenExec  //第一层动态代码开始,在连续的3个支持代码生成的最上层
+    +child:SupportCodegen         
+      + child:SupportCodegen   
+        + child:SupportCodegen  
+         + child : InputAdapter //第一层结束 ， 在不支持代码生成的上一层
+            + child:UnSupportCodegen
+             +  child:WholeStateCodegenExec  //第二层动态代码开始
+              + child:SupportCodegen
+                + child : InputAdapter //第二层结束
+                 + child:UnSupportCodegen
+                  +  child:WholeStateCodegenExec  //第三层动态代码开始
+                     + child:SupportCodegen
+
+```        
+
+
+## 代码生成详细过程
+![](../../images/spark_sql_souce_generate.jpg)
+
+### 计划生成与转换
+*   根据对Dataset的操作会生成对应的逻辑计划
+    -   filter 操作 ==>  Filter
+    -   select($"age" + 1) ==> Project
+*   逻辑计划经过优化后转换成相对应的物理计划
+    -   Filter ==> FilterExec
+    -   Project ==> ProjectExec
+*   物理计划执行前进一步优化物理计划
+    -   CollapseCodegenStages ==>  添加全局代码生成
+        +   WholeStateCodegenExec物理计划添加
+        +   InputAdapter物理计划添加
         
+### 可执行物理计划执行executedPlan: SparkPlan执行
+1.  入口WholeStateCodegenExec#doExecute方法，返回一个包含一组逻辑的RDD
+1.  动态代码类生成doCodeGen
+    -   准备逻辑处理代码
+        +   while循环遍历partition每个元素循环体内嵌入动态生成的逻辑代码
+1.  获取输入rdd:inputRDDs
+    1.  可能是数据源的数据RDD,如：RowDataSourceScanExec
+    2.  也可能是InputAdapter返回的child#execute执行的rdd
+1.  遍历inputRDDs的partitions，将partition的iterator包装成动态代码类的iterator
+    1.  新的iterator执行了生成代码的逻辑
+
+### RDD 与 Dataset 基本操作对比
+####    同样2个操作，一个filter,一个map
+|        | RDD          | Dataset  |
+| ------------- |:-------------:| -----|
+| filter操作     | 新的MapPartitionsRDD| 与map操作相同MapPartitionsRDD |
+| map 操作     | 新的MapPartitionsRDD   |  连续支持CodegenSupport的都对应相同的MapPartitionsRDD |
+| 转换操作调用| 虚拟调用</br>Iterator.map\[B\](f: A => B)  </br>Iterator.filter(p: A => Boolean)    |   动态代码，直接方法调用</br> while (scan_input6.hasNext()) {</br>// filter 操作代码实现</br>// age + 1 代码操作实现</br>}</br> |
+|  数据压缩 | 无  | 有，UnsafeRow格式，容易压缩 |
+|  执行逻辑优化| 无 | 有,一些列优化规则 |
+
+

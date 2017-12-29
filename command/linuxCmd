@@ -96,7 +96,7 @@ shandsocks5 代理
 http://blog.izilong.net/2017/02/03/shadowsocks%E5%85%B1%E4%BA%AB-for-mac/
  /usr/local/Cellar/privoxy/3.0.26/sbin/privoxy --no-daemon /usr/local/etc/privoxy/config
  在局域网内其他主机上，代理设置为Mac的IP，端口为之前设置的8118，即可使用Mac上的shadowsocks代理。
-
+127.0.0.1:1086
  修改forward-socks5t /
 
 删掉注释符，修改为：forward-socks5t / 127.0.0.1:1080 .
@@ -126,3 +126,11 @@ system_profiler SPUSBDataType
 
 kill 
 ps -ef |grep hello |awk '{print $2}'|xargs kill -9
+
+cpu
+cat /proc/cpuinfo| grep "cpu cores"| uniq
+
+
+scp local_file remote_username@remote_ip:remote_folder
+
+ssh root@192.168.2.248 -p  34001  

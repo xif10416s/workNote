@@ -158,6 +158,10 @@
 
 
 ##  SortShuffleWriter
+
+### 图解
+![](../images/spark_shuffle_writer.jpg)
+
 ### ExternalSorter
 *   排序并合并相同的key的元素
 *   通过Partitioner计算key应该在哪个partiton,通过自定义的Comparator在partition内做元素的排序
@@ -232,7 +236,6 @@
 
 
 
-![](../images/spark_shuffle_writer.jpg)
  
 
 

@@ -197,7 +197,7 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
     1.   rdd.iterator(partition, context),也就是MapPartitionsRDD的compute中对每个元素执行 map定义的函数（随机2个数字，计算在圆内为1，否则为0）,一个partition计算10000次
     2.   func函数，是reduce函数，map执行完成，在worker的executor端做合并，减少返回，也就是_+_
 *   将返回值序列化，serializedDirectResult = ser.serialize(directResult)
-*   返回结果给driver
+*   Executor#run 返回结果给driver
     -   返回结果大于maxResultSize【默认1gb】,返回结果的blockid，让driver自己拉取，` ser.serialize(new IndirectTaskResult[Any](TaskResultBlockId(taskId), resultSize))`
     -   否则直接返回序列化结果
 *    给driver发送结束状态消息，execBackend.statusUpdate(taskId, TaskState.FINISHED, serializedResult)
@@ -254,3 +254,49 @@ partition:{1} 合并任务结果开始..
 STEP 6 : 任务全部完成,返回结果 
 Pi is roughly 3.1398956994784974
 ```
+
+## SparkContext启动参数
+```
+val spark = SparkSession
+      .builder.master("spark://xifeideMacBook-Pro.local:7077") // standalone 集群地址
+      .config("spark.jars", "/Users/seki/git/learn/spark/examples/target/original-spark-examples_2.11-2.2.1-SNAPSHOT.jar") // 运行时依赖jar,需要被发送的worker
+      .config("spark.executor.memory", "512m") // 每个executor 启动内存
+      .config("spark.executor.cores", "1")   // 每个executor 分配cpu数【不指定的情况，每个worker只有一个executor,使用所有分配的cpu】
+      .config("spark.cores.max","4")   // app任务 最多使用多少个 cpu
+      .config("spark.task.cpus","1")  // 每个执行的task 使用的cpu数，默认是1  ，所以同时并发线程数 = 分配的 cpu数 ， 1个task 可能 用多个 cpu
+      .appName("Spark Pi")
+```
+
+## Executor 创建   -- Spark standalone
+##  worker | executor | tasks
+*   资源分配
+    -   worker1 , cores = 4
+    -   worker2 , cores = 4
+*   executor 个数 = 最大可用 cpu 数 / 每个 executor 指定cup 数
+    -   spark.executor.cores 不指定，一个worker  使用一个 executor , 分配当前work 所有可用 cpu 数
+*   并发线程数 =  最大可用cpu 数 /  spark.task.cpus(每个task 使用的cpu 数)
+    -   一个task 至少使用 1个 cpu
+    -   并发线程数 <=  当前可用cpu数
+*   task的执行有TaskSchedulerImpl分配
+    -   为什么能够做到 1 个 task 分配一个cpu , 因为TaskSchedulerImpl这边根据可用cpu 和 spark.task.cpus数量分配，所以1个task 至少有一个可用cpu 才能 launch task
+        +   worker 端的 Executor 的 处理任务的线程池 threadPool 是没有数量限制的， 在给定的cpu数量下，接受到多少个task 就启动多少个线程
+
+## submit 参数
+###   Run on a Spark standalone
+*   --executor-memory 20G   
+*   --total-executor-cores 100 
+
+
+
+###  Run on a YARN cluster
+*   --executor-memory 20G  每个executor 多少内存
+*   --num-executors 50    定义多少个executor
+*   --executor-cores 2   每个executor 多少cpu
+
+$SPARK_HOME/bin/spark-submit --master yarn --deploy-mode client --name test  --num-executors 6 --executor-cores 3   testprime.py
+
+3worker  9contain   15 GB /  48 GB   0 B   21 / 24 
+
+/default-rack   RUNNING   uhadoop-adarbt-core2:23333  uhadoop-adarbt-core2:23999  Wed Nov 29 11:18:51 +0800 2017    2   4 GB  12 GB   6   2   2.6.0-cdh5.4.9
+  /default-rack   RUNNING   uhadoop-adarbt-core1:23333  uhadoop-adarbt-core1:23999  Wed Nov 29 11:17:54 +0800 2017    2   4 GB  12 GB   6   2   2.6.0-cdh5.4.9
+  /default-rack   RUNNING   uhadoop-adarbt-core3:23333  uhadoop-adarbt-core3:23999  Wed Nov 29 11:18:35 +0800 2017    3   5 GB  11 GB   7   1   2.6.0-cdh5.4.9 

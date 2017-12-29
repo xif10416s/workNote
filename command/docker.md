@@ -18,3 +18,6 @@
 *   docker machin 清理
     -   http://www.cnblogs.com/junneyang/p/6133157.html
     -   docker system prune -a
+
+
+-m 100m --memory-swap=100m

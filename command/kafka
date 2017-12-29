@@ -14,6 +14,8 @@ http://baike.baidu.com/link?url=94WnPneHN5Pl8G7K45NvzQdQLUBTMLMxAVRBUblx1OYQUOxA
 
  bin/kafka-consumer-offset-checker.sh --zookeeper ip:2181 --group kafkaGroup2  --topic ml_test
 
+ bin/kafka-consumer-groups.sh  --list --bootstrap-server localhost:9092
+
 kafak monit:
 java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp KafkaOffsetMonitor-assembly-0.2.0.jar \
      com.quantifind.kafka.offsetapp.OffsetGetterWeb \
@@ -21,4 +23,6 @@ java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp Kaf
      --port 8086 \
      --refresh 10.seconds \
      --retain 2.days &
+
+ kafka 需要所有主机的host 对应的ip    
 

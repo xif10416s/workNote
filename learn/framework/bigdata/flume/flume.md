@@ -116,8 +116,17 @@
 ### 问题
 *   flume  hive sink 小文件
 *   500万 = 40 m
-*   分区时间为服务器时间，多批次数据在一个文件，对于同一个批次跨了分区怎么办
+*   [agent-shutdown-hook] (org.apache.flume.lifecycle.LifecycleSupervisor.stop:78)  - Stopping lifecycle supervisor 13
+*   (org.apache.hadoop.hive.metastore.HiveMetaStoreClient.close:495)  - Unable to shutdown local metastore client
+    -   org.apache.thrift.transport.TTransportException: java.net.SocketException: Socket closed
+*   spark 无法读取 flume hive-sink收集的数据 , spark不支持hive事务
+    -   https://issues.apache.org/jira/browse/SPARK-16996
+    -    alter table ... partition .... COMPACT 'major'
 
+####    org.apache.hive.hcatalog.streaming.HeartBeatFailure: Heart beat error. InvalidTxns ,(org.apache.hadoop.hive.metastore.HiveMetaStoreClient.close:495)  - Unable to shutdown local metastore client
+- org.apache.thrift.transport.TIOStreamTransport.flush(TIOStreamTransport.java:161)
+- hive_sink.heartBeatInterval heartBeatInterval ==>Default: 240
+- hive.txn.timeout = 300  ==> Default: 300  ==> 600
 
 ## 启动
 ### LifecycleSupervisor

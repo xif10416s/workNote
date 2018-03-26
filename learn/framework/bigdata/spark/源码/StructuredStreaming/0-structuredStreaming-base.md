@@ -4,6 +4,8 @@
 *   当流数据到来时，spark sql 引擎会连续的增量的更新最终结果，spark sql 的所有优化都用使用到
 *   通过checkpointing and Write Ahead Logs 保证端到端的 exactly-once 容错处理
 *   fast, scalable, fault-tolerant, end-to-end exactly-once
+*   spark 2.3 以前 使用 micro-batch processing engine，端对端的延迟在100 ms,端对段只有一次语义（exactly-once)
+*   spark 2.3 以后 使用 Continuous Processing ，延迟在 1ms 端对的最少一次语义（at-least-once)
 
 ## 程序模型
 *   最基本的设计是将实时数据流看成一张不断添加数据的无边界的表，与批处理方式相似

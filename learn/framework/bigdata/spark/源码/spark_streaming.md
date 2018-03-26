@@ -1,6 +1,8 @@
 #Spark Streaming
 ## before spark 2.0
 ## DStream
+*   kafka
+    -   https://my.oschina.net/u/1250040/blog/908571
 *   描述
     -   相同类型的一组RDD,代表连续的数据流
     -   可以由实时数据流创建,TCP sockets , kafka ,flume ,现有DStreams转换操作,

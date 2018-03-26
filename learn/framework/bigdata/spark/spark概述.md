@@ -138,7 +138,7 @@ Node 上的 Executor
 
 ## 源码调试
 *  maven version 3.3.6以上 ，执行 package -Dmaven.test.skip=true
-*  依赖 provided 改成 complie
+*   spark-core_2.11.iml  => replace  scope="PROVIDED"  to "" 添加依赖
 *  master 启动
     -  org.apache.spark.deploy.master.Master
 *   worker 启动
@@ -156,5 +156,21 @@ Node 上的 Executor
 ## TODO
 *   资源分配，一个job分配多少个executor
 *   stage划分
+
+## cdh repo
+```
+<repositories>
+        <repository>
+            <id>cloudera-releases</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+```
 
 

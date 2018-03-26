@@ -1,4 +1,5 @@
 #	hive -- https://cwiki.apache.org/confluence/display/Hive/Home
+*   [hive整理总结](http://www.bijishequ.com/detail/566762?p=)
 *   http://www.yiibai.com/hive/hive_partitioning.html
 *	Hive是建立在Hadoop之上为了减少MapReduce jobs编写工作的批处理系统
 *   hive 数据单元
@@ -49,6 +50,7 @@
     -   /var/log/hive/hive-server2.log
     -   --hiveconf hive.server2.thrift.client.user=root  --hiveconf hive.server2.thrift.client.password=123456
 *   hive事务,https://cwiki.apache.org/confluence/display/Hive/Streaming+Data+Ingest
+    -   http://www.csdn.net/article/2014-04-23/2819438-Cloud-Hive
     *   HiveEndPoint
         +   每个事务有一个id
         +   多个事务可以组合成一个Transaction Batch，每个Transaction Batch都写入一个文件，减少文件数量
@@ -62,7 +64,47 @@
     *   RecordWriter
         -   接受一个byte数组的数据并转换成支持Hive streamingg的格式并写入
     *   RecordUpdater
-        -   
+    *   Compactor -- 后台压缩处理，
+        -   两种压缩类型
+            +   minor
+                *   takes a set of existing delta files and rewrites them to a single delta file per bucket.
+            +   major
+                *   takes one or more delta files and the base file for the bucket and rewrites them into a new base file per bucket.  Major compaction is more expensive but is more effective.
+*   https://www.slideshare.net/hortonworks/hive-on-spark-is-blazing-fast-or-is-it-final
+*   命令
+    -   hive --hiveconf hive.root.logger=DEBUG,console  
+    -   alter table post_action PARTITION(day='2018-01-04') COMPACT 'major';
+        +   只有一个delta时候不执行压缩
+    -   SHOW COMPACTIONS;
+    -   ALTER TABLE post_distribution DROP IF EXISTS PARTITION (day='2018-01-15');
+
+## hive
+### 组件
+*   Metastore组件：元数据服务组件，这个组件存储hive的元数据，hive的元数据存储在关系数据库里，hive支持的关系数据库有derby、mysql。
+*   Driver组件：核心组件，整个Hive的核心，该组件包括Complier、Optimizer和Executor，它的作用是将我们写的HQL语句进行解析、编译优化，生成执行计划，然后调用底层的MapReduce计算框架。
+*   Serializers/Deserializers
+*   ThriftMetastore
+*   HiveServer
+
+## 性能
+*    小表 join 大表 ==》you should structure your join queries so the largest table is last.
+
+
+## 问题
+###  hive 执行 minor compact 然后执行 major compact ，一段时间内会select 出错，Failed with exception java.io.IOException:java.lang.RuntimeException: serious problem 
+*   执行一条命令，出现2个压缩任务
+*   重新执行一次压缩后，问题解决
+*   hive.compactor.worker.threads 多个线程
+
+####  出现两层base目录 /user/hive/warehouse/dyd_raw_data.db/post_distribution/day=2018-01-12/base_0010076/base_0010076
+*   重新执行压缩无效，删除最底层base目录
+
+#### master1 ，master2同时执行了compactor任务
+*    application_1514973560079_0485 root    uhadoop-adarbt-master2-24-compactor-dyd_raw_data.post_distribution.day=2018-01-17   MAPREDUCE   root.root   Thu Jan 18 00:00:15 +0800 2018  Thu Jan 18 00:00:36 +0800 2018  FINISHED    SUCCEEDED   N/A N/A N/A 
+*   application_1514973560079_0484  root    uhadoop-adarbt-master1-24-compactor-dyd_raw_data.post_distribution.day=2018-01-17   MAPREDUCE   root.root   Thu Jan 18 00:00:15 +0800 2018  Thu Jan 18 00:00:34 +0800 2018  FINISHED    SUCCEEDED   
+*   master1,master2同时起了 HiveMetaStore
+    -   master1 hive.compactor.worker.threads = 0 ，只让master2执行
+
 
 
 ## hive test
@@ -79,6 +121,7 @@ CREATE TABLE test_orc3(id INT)
 
  INSERT INTO TABLE test_orc PARTITION (dt = '2017-12-01') VALUES (1)
 DESCRIBE formatted test_orc partition (dt='2017-05-01');
+DESCRIBE formatted post_action partition (day='2018-01-04');
 
 
 val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)

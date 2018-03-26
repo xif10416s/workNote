@@ -1,7 +1,7 @@
 1.memory
 jstat -gcutil pid 300 10
 jmap -heap pid
-
+jmap -histo
 
 2.JConsole
 加jvm 启动参数即可： 
@@ -10,3 +10,7 @@ jmap -heap pid
 
 3.java证书列表
 keytool -list -v  -keystore "$JAVA_HOME/jre/lib/security/cacerts" -storepass changeit
+
+4.jvm
+http://blog.csdn.net/yaowj2/article/details/7107818
+http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/G1GettingStarted/index.html

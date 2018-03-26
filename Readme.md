@@ -15,15 +15,12 @@
             *   [2-SparkSql-shuffle.md](learn/framework/bigdata/spark/源码/sql/2-SparkSql-shuffle.md)   
             *   [3-sparksql-complex-process.md](learn/framework/bigdata/spark/源码/sql/3-sparksql-complex-process.md)   
         +   spark Streaming
+            *   streaming
+                -   [0-spark-streaming-base.md](learn/framework/bigdata/spark/源码/streaming/0-spark-streaming-base.md) 
             *   structuredStreaming
                 *   [0-structuredStreaming-base.md](learn/framework/bigdata/spark/源码/StructuredStreaming/0-structuredStreaming-base.md) 
                 *   [1-structedStreaming-基本流程.md](learn/framework/bigdata/spark/源码/StructuredStreaming/1-structedStreaming-基本流程.md)  
-    -   官网
-        +   apache
-            *   [Deploying](learn/framework/bigdata/spark/官网/apache/deploying.md)
-            *   [Machine Learning Libary](learn/framework/bigdata/spark/官网/apache/Machine_Learning_Library.md)
-            *   [Spark Sql , Dataframes and DateSet](learn/framework/bigdata/spark/官网/apache/Spark_SQL_DataFrames_and_Datasets.md)
-            *   [Spark streaming](learn/framework/bigdata/spark/官网/apache/spark_streaming.md)
+    -   阅读
         +   databricks
             *   blogs
                 -   [Project Tungsten- Bringing Apache Spark Closer to Bare Metal](learn/framework/bigdata/spark/官网/databricks/blogs/Project_Tungsten_Bringing_Apache_Spark_Closer_to_Bare_Metal.md)

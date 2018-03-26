@@ -264,6 +264,7 @@ val spark = SparkSession
       .config("spark.executor.cores", "1")   // 每个executor 分配cpu数【不指定的情况，每个worker只有一个executor,使用所有分配的cpu】
       .config("spark.cores.max","4")   // app任务 最多使用多少个 cpu
       .config("spark.task.cpus","1")  // 每个执行的task 使用的cpu数，默认是1  ，所以同时并发线程数 = 分配的 cpu数 ， 1个task 可能 用多个 cpu
+       .config("spark.memory.fraction","0.3") // 存储内存百分比 
       .appName("Spark Pi")
 ```
 
@@ -285,6 +286,7 @@ val spark = SparkSession
 ###   Run on a Spark standalone
 *   --executor-memory 20G   
 *   --total-executor-cores 100 
+*   --driver-memory 512m --
 
 
 

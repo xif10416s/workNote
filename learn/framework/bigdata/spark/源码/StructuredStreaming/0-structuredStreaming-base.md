@@ -16,7 +16,7 @@
 *   ![](https://spark.apache.org/docs/latest/img/structured-streaming-model.png）
 *   每个一定时间【1s】会触发一次数据操作，新的数据会作为行添加到input Table
 *   然后触发 input 上的查询操作生成 结果result table
-*   结果内容最终可以以不同模式被输出到外部存储
+*   Output Modes ： 结果内容最终可以以不同模式被输出到外部存储
     -   Complete Mode ：
         +   全部更新后的result table被写入到外部存储，有外部存储接收器负责决定如何处理整个结果表
             *   aggregation queries
@@ -25,8 +25,32 @@
             *   select, where, map, flatMap, filter, join
     -   Update Mode -Available since Spark 2.1.1)
         +   只有相对于上一次变化的结果会被处理
-            *   
+*   Output Sinks -- 保存目的源
+    -   File sink  ， 保存到目录
+    -   Kafka sink ， 保存到kafka
+    -   Foreach sink , 遍历处理，自己实现保存逻辑
+    -   Console sink，测试用，打印输出
+    -   Memory sink，测试用
+*   Triggers -- 批处理任务触发时机定义
+    -   unspecified（默认）
+        +   不指定的情况， micro-batch 模式，每个 micro-batch 处理完成后开启一个新的 micro-batch 
+    -   Fixed interval micro-batches -- 指定间隔的 micro-batches
+        +   处理时间快的情况，在指定间隔内完成，等待到间隔时间开启新的micro-batches
+        +   处理时间慢的情况，超过指定间隔时间了，处理完成立即开启新的micro-batches
+        +   没有新数据的情况不会开启micro-batches
+    -   One-time micro-batch
+        +   只执行一次micro-batch，之后就停止
+    -   Continuous with fixed checkpoint interval -- 低延迟持续处理（2.3.1 实验）
+        +   1 ms 端对端延迟，最少一次容错语义 ，相比微批处理 100ms延迟，exactly-once容错处理
 *   每一种模式都有各自适用的查询操作
+
+##  参数
+*   spark.sql.streaming.minBatchesToRetain 
+    -   保存最多批次数，用于恢复，默认100
+    -   超出的批次数据会被删除
+    -   影响对象
+        +   StreamExecution#offsetLog -- write-ahead-log，未处理批次数据 
+        +   StreamExecution#commitLog -- 完成批次记录
 
 ##  基于事件发生时间的窗口处理
 *   时间点说明：

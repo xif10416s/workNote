@@ -47,8 +47,9 @@ byteArrayRdd:MapPartitionsRDD // 数据编码及压缩
 ```
 *   逻辑计划 ==》 物理计划 ，SparkPlanner中的strategies实现
     -   Aggregate 逻辑计划对应有 Aggregation extends Strategy 来负责转换，**每个聚合操作会生成 2个 HashAggregateExec 物理计划** //TODO
-        +    创建一个partial aggregations聚合操作
+        +    创建一个partial aggregations聚合操作，
             *    操作的对象为原始输入数据，当所有输入行处理完成， aggregation buffers结果返回
+            *    requiredChildDistributionExpressions = None不依赖其他表达式
         +    创建一个final aggregations聚合操作
             *    操作对象为aggregation buffers中间结果，合并这些中间结果返回
 *   物理计划 ==》 执行计划，通过preparations定义的一些rule做一些增强处理

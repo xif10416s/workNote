@@ -1,5 +1,7 @@
 # hbase.md
- 
+*   http://www.postgres.cn/downfiles/pg2016conf_day2_s3_am1.pdf 
+*   /home/hadoop/hbase/bin/hbase-daemon.sh start thrift
+*   -Dhbase.log.dir=/data/hbase/logs
 
 ##  数据模型 -- sparse, distributed, persistent multidimensional sorted map, which is indexed by a row key, column key, and a timestamp 
 ###  基本组件
@@ -61,7 +63,7 @@
     -   {NAME => 'f', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING =>
  'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_S
 COPE => '0'}
-*   create 'test:mt2', {NAME => 'f',  COMPRESSION => 'SNAPPY',TTL => '200000000'},  {NUMREGIONS => 24, SPLITALGO => 'HexStringSplit'}
+*   create 'test:mt4', {NAME => 'f',  COMPRESSION => 'SNAPPY',TTL => '200000000'}, {NAME=>'t',TTL => '86400'},  {NUMREGIONS => 2, SPLITALGO => 'HexStringSplit'}
     -   put 'test:mt2',123,'f:20141224',6 ,1432483200000
     -   scan 'test:mt2'
     -   put 'test:mt2',123,'f:20141224',6
@@ -76,6 +78,7 @@ COPE => '0'}
     -    scan 'test:mt2' ,{LIMIT =>1 , FILTER=>"ValueFilter(=,'binary:6')"}
     -    get 'test:mt2' ,'a123'
     -    get 'test:mt2' ,'a123',FILTER=>"ValueFilter(=,'binary:6')"
+    -    get 'test:mt2' ,'row-key-6',FILTER=>"SKIP ValueFilter(!=,'binary:7')"
     -    FILTER=>"ColumnPrefixFilter('birth') AND ValueFilter ValueFilter(=,'substring:1987')"
     -    scan 'test:mt2', { STARTROW => 'b223-',STOPROW=> 'b223.', FILTER=>"FirstKeyOnlyFilter() AND ValueFilter(>=,'binary:0') ",LIMIT => 3 }
     -    scan 'test:mt2', { STARTROW => 'row-key-',STOPROW=> 'row-key.', FILTER=>"SKIP ValueFilter(>=,'binary:0') ",LIMIT => 3 }
@@ -83,6 +86,10 @@ COPE => '0'}
     -    scan 'test:mt2',{REVERSED => TRUE}
     -    scan 'test:mt2', { STARTROW => 'row-key-',STOPROW=> 'row-key.', FILTER=>"SKIP ValueFilter(!=,'binary:-1') AND QualifierFilter(=,'binary:ugs')",LIMIT => 100 }
     -    put 'test:mt2','row-key-15','f:20141224',0 , {'TTL'=>10000}
+    -    scan 'dyd:user_recommend_posts', { STARTROW => '1e156267adf0a575-',STOPROW=> '1e156267adf0a575.', FILTER=>" SingleColumnValueFilter('f','d',=,'binary:-1',true,true)  AND QualifierFilter(=,'binary:cb')",LIMIT => 5000 }
+    -    compact 'dyd:user_recommend_posts', 'f'
+    -    major_compact 'dyd:user_recommend_posts', 'f'
+    -    get 'test:mt2','3a811367adf0a575' , { FILTER=> "(ValueFilter(=,'substring:cus_cf') AND ColumnCountGetFilter(100)   )OR (ValueFilter(=,'substring:ugs') AND ColumnCountGetFilter(100)  ) "}
 *   disable 'test:mt2'
     -   drop  'test:mt2'
     -  delete 'test:mt2','a123-2', 'f:20141224'
@@ -243,6 +250,43 @@ rdd.saveAsNewAPIHadoopDataset(job.getConfiguration)
 val bulkLoader = new LoadIncrementalHFiles(conf)
 bulkLoader.doBulkLoad(new Path("/tmp/hbase/test/mt2"), table)
 
+========batch check and put---
+import java.util
+import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.CompareType
+import org.apache.hadoop.hbase.client.{HTable, ConnectionFactory, Delete, Scan}
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
+import org.apache.hadoop.hbase.filter._
+import org.apache.hadoop.hbase.spark.HBaseContext
+import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
+import org.apache.hadoop.hbase.client.{Get, ConnectionFactory, Put}
+val tableName = "test:mt2"
+val conf = HBaseConfiguration.create()
+val connection = ConnectionFactory.createConnection(conf)
+val table = connection.getTable(TableName.valueOf(tableName)).asInstanceOf[HTable]   
+table.setAutoFlushTo(false)
+table.setWriteBufferSize(64*1024*1024)
+val put=new Put(Bytes.toBytes("row-key-6"))
+put.addColumn(Bytes.toBytes("f"),Bytes.toBytes("000132345"),Bytes.toBytes("8"))
+table.checkAndPut(Bytes.toBytes("row-key-6"),Bytes.toBytes("f"),Bytes.toBytes("000132345"),org.apache.hadoop.hbase.filter.CompareFilter.CompareOp.NOT_EQUAL,Bytes.toBytes(0), put)
+
+
+val put2=new Put(Bytes.toBytes("row-key-6"))
+put2.addColumn(Bytes.toBytes("f"),Bytes.toBytes("000212345"),Bytes.toBytes(4))
+table.checkAndPut(Bytes.toBytes("row-key-6"),Bytes.toBytes("f"),Bytes.toBytes("000212345"),org.apache.hadoop.hbase.filter.CompareFilter.CompareOp.NOT_EQUAL,Bytes.toBytes(3), put2)
+
+val put3=new Put(Bytes.toBytes("row-key-16"))
+put3.addColumn(Bytes.toBytes("f"),Bytes.toBytes("000212345"),Bytes.toBytes(3))
+table.checkAndPut(Bytes.toBytes("row-key-16"),Bytes.toBytes("f"),Bytes.toBytes("000212345"),org.apache.hadoop.hbase.filter.CompareFilter.CompareOp.EQUAL,null, put3)
+
+val m = connection.getBufferedMutator(TableName.valueOf(tableName))
+val puts = new java.util.ArrayList[Put]()
+val put=new Put(Bytes.toBytes("row-key-6"))
+put.addColumn(Bytes.toBytes("f"),Bytes.toBytes("000132345"),Bytes.toBytes("5"))
+puts.add(put)
+m.checkAndMutate(Bytes.toBytes("row-key-6"),Bytes.toBytes("f"),null,org.apache.hadoop.hbase.filter.CompareFilter.CompareOp.NOT_EQUAL,Bytes.toBytes(3),puts)
+
+
 
 ```
 
@@ -313,6 +357,9 @@ with pool.connection() as connection:
 ```   
 
 
+## hbase 原理
+### scan http://forum.huawei.com/enterprise/zh/thread-327647-1-1.html
+
 ## 问题
 ###   ValueFilter 过滤出了所有匹配的包括旧的value
 *   FirstKeyOnlyFilter() 放在最前面
@@ -369,6 +416,32 @@ digest.digest(text.getBytes).map("%02x".format(_)).mkString
     -   比较已经存在的postid,重复的不写入，保证一个user+posti只有一条记录
         +   读取一次
         +   比较排除
+
+
+## yichang
+2018-04-11 09:32:31.008  WARN 22225 --- [le-pool1-t18935] o.a.h.hbase.util.DynamicClassLoader      : Failed to check remote dir status /tmp/hbase-root/hbase/lib
+
+java.io.FileNotFoundException: File /tmp/hbase-root/hbase/lib does not exist
+  at org.apache.hadoop.fs.RawLocalFileSystem.listStatus(RawLocalFileSystem.java:376) ~[hadoop-common-2.6.0.jar:na]
+  at org.apache.hadoop.fs.FileSystem.listStatus(FileSystem.java:1485) ~[hadoop-common-2.6.0.jar:na]
+  at org.apache.hadoop.fs.FileSystem.listStatus(FileSystem.java:1525) ~[hadoop-common-2.6.0.jar:na]
+  at org.apache.hadoop.fs.ChecksumFileSystem.listStatus(ChecksumFileSystem.java:570) ~[hadoop-common-2.6.0.jar:na]
+  at org.apache.hadoop.hbase.util.DynamicClassLoader.loadNewJars(DynamicClassLoader.java:203) [hbase-common-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.util.DynamicClassLoader.tryRefreshClass(DynamicClassLoader.java:168) [hbase-common-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.util.DynamicClassLoader.loadClass(DynamicClassLoader.java:140) [hbase-common-1.2.0-cdh5.8.0.jar:na]
+  at java.lang.Class.forName0(Native Method) [na:1.8.0_144]
+  at java.lang.Class.forName(Class.java:348) [na:1.8.0_144]
+  at org.apache.hadoop.hbase.protobuf.ProtobufUtil.toException(ProtobufUtil.java:1545) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.protobuf.ResponseConverter.getResults(ResponseConverter.java:125) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.client.MultiServerCallable.call(MultiServerCallable.java:133) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.client.MultiServerCallable.call(MultiServerCallable.java:53) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.client.RpcRetryingCaller.callWithoutRetries(RpcRetryingCaller.java:200) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at org.apache.hadoop.hbase.client.AsyncProcess$AsyncRequestFutureImpl$SingleServerRequestRunnable.run(AsyncProcess.java:733) [hbase-client-1.2.0-cdh5.8.0.jar:na]
+  at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [na:1.8.0_144]
+  at java.util.concurrent.FutureTask.run(FutureTask.java:266) [na:1.8.0_144]
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [na:1.8.0_144]
+  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [na:1.8.0_144]
+  at java.lang.Thread.run(Thread.java:748) [na:1.8.0_144]
 
 
 ## 参考

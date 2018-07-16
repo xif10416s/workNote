@@ -35,7 +35,7 @@
 *   最近邻（neighborhood）方法 --属于Memory-based类型
     -   用户推荐（UserCF）
     -   物品推荐（ItemCF)
-*   潜在因子（latent factor）
+*   潜在因子（latent factor）  --属于Model-based类型
     -   SVD奇异值分解矩阵
     -   ALS交替最小二乘
 
@@ -49,6 +49,16 @@
 ### 物品推荐（ItemCF)--推荐那些和他之前喜欢的物品类似的物品
 *   根据物品推荐着重与用户过去的历史兴趣，反应本人的兴趣爱好，更加个性化
 *   ItemCF需要维护一个物品相似度矩阵
+
+#### slope one Item-Based 的协同过滤推荐算法
+*   https://blog.csdn.net/whaoxysh/article/details/19038453
+*   人们并不总是能给出评分，当用户只提供二进制数据（购买与否）的时候，就无法应用Slope One 和其它基于评分的算法
+*   该算法适用于物品更新不频繁，数量相对较稳定并且物品数目明显小于用户数的场景。依赖用户的用户行为日志和物品偏好的相关内容。
+    *   优点：
+        *   1.算法简单，易于实现，执行效率高；
+        *   2.可以发现用户潜在的兴趣爱好；
+    *   缺点：
+        *   依赖用户行为，存在冷启动问题和稀疏性问题。
 
 ### 用户推荐（UserCF）vs 物品推荐（ItemCF)
 |项目   |    UserCF|ItemCF|
@@ -90,6 +100,8 @@
 ### 探索推荐引擎内部的秘密，第 3 部分: 深入推荐引擎相关算法 - 聚类
 *   https://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/index.html
 
+## 阅读
+*   http://www.infoq.com/cn/articles/user-portrait-collaborative-filtering-for-recommend-systems
 
 ## 参考
 *   https://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/index.html

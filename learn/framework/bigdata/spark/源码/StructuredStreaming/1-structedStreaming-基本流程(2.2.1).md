@@ -1,8 +1,9 @@
-#   基本流程
+#   基本流程 spark 2.2.1
 ##  StructuredNetworkWordCount 统计来自socket的word count
 ![](../../images/structuredStream-base-process.jpg)
 
 ###  创建stream，指定数据源
+*   DataStreamReader--从外部存储加载流数据的接口
 ```
       lines = spark.readStream.format("socket")
       .option("host", host)
@@ -11,7 +12,7 @@
 ```
 ####   加载数据流为 DataFrame， DataStreamReader#load
 *   与普通DataFrame初始化相似，只是使用StreamingRelation
-*   新建DataSource，根据format和option初始化对应的source
+*   新建DataSource，根据format和option初始化对应的StreamSourceProvider
     -   providingClass => org.apache.spark.sql.execution.streaming.TextSocketSourceProvider
         -   Source:TextSocketSource
 *   包装成StreamingRelation(dataSource)

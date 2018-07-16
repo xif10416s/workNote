@@ -3,7 +3,7 @@
 ##  类定义
 ```
 abstract class RDD[T: ClassTag](
-    @transient private var _sc: SparkContext,
+    @transient private <var></var> _sc: SparkContext,
     @transient private var deps: Seq[Dependency[_]]
   ) extends Serializable with Logging
 ```

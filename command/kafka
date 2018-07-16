@@ -1,12 +1,16 @@
 start
-bin/kafka-server-start.sh config/server.properties &
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 8 --topic test
 
 normal
 bin/kafka-topics.sh --describe --zookeeper ip:2181 --topic ml_ad_exposure_log
 bin/kafka-console-producer.sh --broker-list ip:9092 --topic ml_ad_install_log
 bin/kafka-topics.sh --delete --zookeeper ip:2181 --topic ml_ad_exposure_log
 bin/kafka-topics.sh --create --zookeeper ip:2181 --replication-factor 2 --partitions 4 --topic ml_ad_install_log
-bin/kafka-topics.sh --list --zookeeper ip:2181
+bin/kafka-topics.sh --list --zookeeper localhost:2181
 bin/kafka-console-consumer.sh --zookeeper ukafka-r122nm-1-bj03.service.ucloud.cn --topic test
 bin/kafka-console-producer.sh --broker-list ukafka-r122nm-1-bj03.service.ucloud.cn:9092 --topic test
 
@@ -14,7 +18,7 @@ bin/kafka-console-producer.sh --broker-list ukafka-r122nm-1-bj03.service.ucloud.
 JBOD
 http://baike.baidu.com/link?url=94WnPneHN5Pl8G7K45NvzQdQLUBTMLMxAVRBUblx1OYQUOxAKrdcQVgtJbKkvkg3JC2qD_SxI2yHifvs1IoSha
 
- bin/kafka-consumer-offset-checker.sh --zookeeper ip:2181 --group kafkaGroup2  --topic ml_test
+ bin/kafka-consumer-offset-checker.sh --zookeeper localhost:2181 --group post-action-consumer  --topic post_distribution_log
 
  bin/kafka-consumer-groups.sh  --list --bootstrap-server localhost:9092
 
@@ -28,3 +32,4 @@ java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp Kaf
 
  kafka 需要所有主机的host 对应的ip    
 
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic test

@@ -73,27 +73,60 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
 *   由原始内存支持的类型取代java对象，spark内部类型，方便序列化反序列化，内存管理
 *   每个元组有三部分组成
     -   ［null bit set］用来跟踪字段是否是null，分配了8个字节标记，每隔字段使用一位表示
-    -     ［values］每个字段存储一个8字节，保存固定长度字段的类型，对于非固定长度的字段保存offset
+    -     ［values］每个字段存储一个8字节，对于基本类型字段（long，double,init），长度固定直接保存名称，对于非固定长度的字段保存offset
 
 ##  org.apache.spark.sql.catalyst.trees
+*   https://github.com/jaceklaskowski/mastering-spark-sql-book/blob/master/spark-sql-catalyst-TreeNode.adoc
+
 #####   TreeNode[BaseType <: TreeNode[BaseType]] extends Product
+*   TreeNode是spark sql 的基础，理解之后会更容易理解spark sql  处理流
 *   无论是sql语句还是api接口方法都会转换成一个语法树，有了语法树就可以优化，执行等操作。
 *   语法树的构建都是由一个个TreeNode组成
 *   TreeNode指的是用于构建一般的树的结点
 *   通过children: Seq[BaseType]描述了一个一对多的父子关系，child节点同样可以有多个子节点
-*   提供一系列查找find,遍历foreach，转换map等方法
+*   主要方法
+    -   find -- 找到满足条件的第一个节点
+    -   foreach（先在父亲节点执行，在调用子类执行），foreachUp（先最底层子类执行，再父类执行）遍历所有节点执行给定的函数
+    -   map-- 执行foreach函数并收集说有结果返回
+    -   collect -- 收集所有节点
+    -   withNewChildren -- 替换有变化的孩子节点并生成一个新的树
+        +   全局代码生成的时候替换，plan.withNewChildren(plan.children.map(insertWholeStageCodegen))
+    -   mapProductIterator
+        +   遍历所有元素(cass class 的所有字段)应用指定的函数f
+    -   transform
+        +   接收一个PartialFunction函数，将Rule迭代应用到该节点的所有子节点，最后返回这个节点的副本
+    -   makeCopy
+        +   反射生成新的节点
+*   两个子类
+    -   QueryPlan
+    -   Expression
 
 ###  org.apache.spark.sql.catalyst.plans
 ####    QueryPlan[PlanType <: QueryPlan[PlanType]] extends TreeNode[PlanType] 
-*    def output: Seq[Attribute]
-*   专门指一棵执行计划树
+*   专门指一棵执行计划树,一个tree相关的操作的结构化查询
 *   QueryPlan的泛型参数仅要求为QueryPlan的子类
+*   def output: Seq[Attribute]
+    -   描述query的结果schema,最终会被用来生成output schema（输出scheam,结果schema)
+*   statePrefix -- "!" 表示无效的计划,   "'" 表示没有解析的计划
+    -   无效QueryPlan : 当字节点存在的时候，没有input attributes的时候
+    -   未解析QueryPlan : 属性名称还没有验证以及属性类型还没有在Catalog查找
+*   def missingInput: AttributeSet
+    -   在表达式中引用的attributes没有在子节点的inputSet中提供 并且也没有在当前节点产生
+*   schema: StructType -- 有哪些字段，类型是什么
+
 
 ### org.apache.spark.sql.catalyst.plans.logical
 ####    LogicalPlan  extends QueryPlan[LogicalPlan]
+*   生成一棵逻辑操作的树，可以通过queryExecution.logical查看
+*   有两种状态，
+    -   analyzed：计划（包含子节点）已经通过分析和验证
+    -   resolved：所有expressions被解析
+*   def maxRows -- query 根据这个值知道最大的能够被处理的记录数是多少
+    -   Limit操作会负责生成这个值
 *   LogicalPlan比起QueryPlan扩展了resolve相关的操作，还加上了一个statistics变量。 该变量实际上就是一个BigInt，代表计划的执行代价
 *   Statistics－－执行计划的代价估计。默认叶子节点的代价为1，非叶子节点的代价为各子结点代价的乘积。不同类型的执行计划通过重载其statistics函数来改变代价计算方式
 *   方法
+    -   resolveQuoted
     -   resolveOperators(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan <== 遍历所有元素应用rule
     -   resolve(schema: StructType, resolver: Resolver): Seq[Attribute] <== 将StructType 解析成 Attribute
 
@@ -109,7 +142,8 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
 
 ##  org.apache.spark.sql.catalyst.expressions
 #####   Expression extends TreeNode[Expression] 
-*   Catalyst的表达式
+*   Catalyst的表达式,可以执行的节点树，根据输入值计算出一个输出值
+*   相同的输入值计算结果始终相同
 *   spark sql 语法 或者 api 解析成对应的 experssion，执行时生成相应的java 代码
 *   方法
     -   eval(input: InternalRow = null): Any  <== 根据输入的internalRow计算结果
@@ -130,11 +164,12 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
 *   string截取操作表达式，生成对应的string截取代码
 
 #####   Attribute extends LeafExpression with NamedExpression with NullIntolerant
+*   QueryPlans通过Attribute创建生成schema
 
 
 #####   <span id = 'AttributeReference'>AttributeReference </span> extends Attribute with Unevaluable
 *   在树中由其他操作生成的某个属性的引用
-*   属性名称，属性类型（DataType），是否可空，id
+*   属性名称，属性类型（DataType），是否可空，id 《== 与scheam 的数据结构相对应
 
 
 ##  org.apache.spark.sql.catalyst.expressions.codegen
@@ -205,12 +240,18 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
     -   等等
 
 #####   SparkPlan extends QueryPlan[SparkPlan]
-*   物理操作的基类
+*   物理操作的结构化物理查询计划
 *   操作命名规则是名称+Exec结尾
 *   子类：
     -   LeafExecNode extends SparkPlan    无字节点
     -   UnaryExecNode extends SparkPlan    一个子节点
     -   BinaryExecNode extends SparkPlan    两个子节点
+*   final def execute(): RDD[InternalRow]
+    -   执行物理操作，触发物理查询计划并最终返回一个RDD[InternalRow]
+    -   执行流程：prepare()==》waitForSubqueries()==》query
+*   def getByteArrayRdd(n: Int = -1): RDD[(Long, Array[Byte])]
+    -   将UnsafeRows转换成byte数组，方便序列化和压缩
+*   def doExecute(): RDD[InternalRow]
 
 
 #####   <span id = 'SparkPlanner' >SparkPlanner </span>(val sqlContext: SQLContext) extends SparkStrategies
@@ -249,11 +290,13 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
 
 
 #####   <span id = 'QueryExecution'>QueryExecution(val sqlContext: SQLContext, val logical: LogicalPlan)</span>
+*   QueryExecution is the structured query execution pipeline of a Dataset.
+*   From SQL through Dataset to RDD
 *   执行关系查询的工作流,可以方便的查询执行过程中的中间阶段的状态，按顺序来是：
     1.   analyzed
         +   解析－－调用Analyzer的execute方法，执行各种规则，返回解析后logicPlan
     1.   withCachedData
-        +   使用缓存
+        +   检查可以使用缓存的节点并替换
     1.   optimizedPlan
         +   执行各种逻辑优化
     1.  sparkPlan
@@ -265,6 +308,9 @@ val ds = Seq(1, 2, 3).toDS() // implicitly provided (spark.implicits.newIntEncod
         +   在物理计划上扩展
         +   preparations
             +   CollapseCodegenStages
+    1.  toRDD
+        +   toRDD涉及 spark sql 和core 两个模块的
+*   Structured Streaming uses for query planning is IncrementalExecution
 ```
 if (conf.wholeStageEnabled) {
                 WholeStageCodegenExec
@@ -338,6 +384,22 @@ if (conf.wholeStageEnabled) {
 
 ##  org.apache.spark.sql.execution.datasources
 #####   <span id = "DataSource">DataSource</span>
+*   主要角色功能：
+    -   创建Source描述数据源  ===解析成spark通用处理对象==》BaseRelation
+    -   Source创建，完成数据的读取，主要区别两类输入源：
+        +   文件类型：通过实现FileFormat来完成各种格式内容相应的在文件和InternalRow之间的读写
+            *   CSVFileFormat--从文件读取内容，将csv格式内容转换成InternalRow给spark处理
+            *   可以通过实现FileFormat来扩展支持的文件格式
+        +   非文件类型：通过实现StreamSourceProvider来描述如何创建数据源
+            *   如：KafkaSourceProvider从kafka读取，TextSocketSourceProvider从socket读取
+            *   通过实现StreamSourceProvider来扩展数据源
+    -   描述如何创建BaseRelation，提供spark通用数据处理形式
+        +   SchemaRelationProvider -- 用户指定schema创建BaseRelation
+        +   RelationProvider -- 不指定schema
+            *   JdbcRelationProvider,KafkaSourceProvider
+        +   FileFormat的情况直接创建HadoopFsRelation
+        +   可以通过RelationProvider，SchemaRelationProvider自定义实现新的Datasource到BaseRelation的转换实现扩展
+*   插件化数据提供框架，以便适应各种各样的输入源进行读写操作
 *   代表spark sql中插件式数据源的主要类 ， 数据源
 *   每种类型的数据源对应各自的数据源提供者对象
     -   json ==>  JsonFileFormat
@@ -379,7 +441,8 @@ if (conf.wholeStageEnabled) {
     -    createRelation（）: BaseRelation，转换成 BaseRelation
 
 #####   <span id = 'LogicalRelation' >LogicalRelation </span> extends LeafNode with MultiInstanceRelation
-*   是一个没有孩子节点的逻辑计划LogicPlan
+*   将BaseRelation适配成逻辑查询计划的一部分
+*   是一个没有孩子节点的逻辑计划LogicPlan树
 *   把schema 转成attribute的集合
 
 

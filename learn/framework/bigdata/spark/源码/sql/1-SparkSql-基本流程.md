@@ -11,14 +11,16 @@
         -   定义一个数据源，什么格式读写数据
     -   1.2  生成统一的数据处理对象baseRelation: [BaseRelation](#BaseRelation)，spark sql处理的数据源可以是文件系统中的json文件，纯文本文件等，也可以是关系数据库中的数据jdbc，所以需要抽象成统一的数据处理方式，知道数据结构，以及数据如何读取  ：</br>
     `DataSource#resolveRelation(): BaseRelation `
-        -   解析的同时会做类型推断获取schema => StructType
+        -   FileFormat的情况解析的同时会做类型推断获取schema => StructType
             +   生成一个DataSet,执行select查询
             +   执行dataSet获取一部分sample数据，根据json内容推断json有哪些字段是什么类型返回
                 *   会触发job任务执行
     -   1.3  将baseRelation封装成[LogicalRelation](#LogicalRelation)，主要将schema转换成 [AttributeReference](#AttributeReference) 数组
+        +    由baseRelation适配成了一棵LogicalPlan，可以进行查询计划的逻辑处理
+        +    数据结构从schema描述转换成AttributeReference描述，以便逻辑计划树操作
     -   1.4  将LogicalRelation封装成Dataframe,类型为Row的[Dataset](#Dataset)，先初始化一下QueryExecution检查一下是否可以执行，然后再封装Dataset: </br>
     `Dataset.ofRows(self, LogicalRelation(baseRelation))`
-        -   1.4.1  预先检查一下，初始化[QueryExecution](#QueryExecution)， 执行关系查询的工作流，初始化各个阶段的状态analyzed，withCachedData，optimizedPlan，sparkPlan，executedPlan:</br>
+        -   1.4.1  预先检查一下，初始化[QueryExecution](#QueryExecution)，qe.assertAnalyzed() 执行关系查询的工作流，初始化各个阶段的状态analyzed，withCachedData，optimizedPlan，sparkPlan，executedPlan:</br>
         `val qe = sparkSession.sessionState.executePlan(logicalPlan)  //Dataset` </br>
         `def executePlan(plan: LogicalPlan): QueryExecution = new QueryExecution(sparkSession, plan)     //SessionState`
             -    1.4.1.1  分析阶段 analyzed: LogicalPlan </br>  通过 [Analyzer](#Analyzer)#execute，遍历plan的所有节点应用配置的一系列规则，一系列规则rule，检查查询语句中使用的对象是否准确，如表和列是否存在，是否包含*需要展开，使用的方法是否存在

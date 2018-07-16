@@ -1,4 +1,5 @@
 #   shuffle过程
+*   https://blog.csdn.net/u012102306/article/details/51637732
 
 ##  shuffle处理器，一共三类：
 ### BypassMergeSortShuffleHandle 对应 BypassMergeSortShuffleWriter
@@ -35,11 +36,11 @@
             *    定义如何合并元素，就是往array中添加元素
         +   mergeCombiners = (c1: CompactBuffer[V], c2: CompactBuffer[V]) => c1 ++= c2
             *   定义如何将两个合并对象合并成一个对象
-    -   包装成  ShuffledRDD\[K, V, C\](self, partitioner)
+    -   包装成  ShuffledRDD\\[K, V, C\\](self, partitioner)
         .setSerializer(serializer)
         .setAggregator(aggregator)
         .setMapSideCombine(mapSideCombine)
-        -   val aggregator = new Aggregator\[K, V, C\](
+        -   val aggregator = new Aggregator\\[K, V, C\\](
       self.context.clean(createCombiner),
       self.context.clean(mergeValue),
       self.context.clean(mergeCombiners)) 为之前定义的三个合并相关的函数
@@ -47,7 +48,7 @@
 ##  执行actions,触发任务提交，RDD#count
 *   RDD形式
     -   ShuffledRDD  <-- 对于pair形式的rdd,隐式调用PairRDDFunctions#groupByKey生成
-        +   prev: MapPartitionsRDD <-- groupby时候先映射成key,value的map操作生成，转出pair形式rdd
+        +   prev: MapPartitionsRDD <-- groupby时候先映射成key,value的map操作生成，转成pair形式rdd
             *   prev:ParallelCollectionRDD <-- sc.parallelize 生成，实际处理数据的RDD
                 -   data : 1 to n
                 -   dependencies_: OneToOneDependecy
@@ -55,9 +56,14 @@
         +   dependencies_: ShuffleDependency <-- ShuffledRDD的getDependencies时设置
             *   _rdd:MapPartitionsRDD
             *   shuffleHandler: BypassMergeSortShuffleHandle
+    -   ShuffleDependency初始化的时候决定用什么shuffleHandle
+        +   SortShuffleManager#registerShuffle 方法确定
+            *   spark.shuffle.sort.bypassMergeThreshold（默认200） >= rdd的partition数量，使用BypassMergeSortShuffleHandle
+            *   supportsRelocationOfSerializedObjects支持使用SerializedShuffleHandle
+            *   否则使用BaseShuffleHandle
 *   stage划分
     -   ResultStage
-        +   parents ： \[ShuffleMapStage\]
+        +   parents ： \\[ShuffleMapStage\\]
             *   shuffleDep :  ShuffleDependency
             *   **rdd : MapPartitionsRDD**  <-- shuffle task执行时计算的rdd
         +   **rdd : ShuffledRDD**  <-- 计算result stage时，先计算的是ShuffleMapStage
@@ -153,11 +159,14 @@
         +   results.put(new SuccessFetchResult(blockId, blockManager.blockManagerId, 0, buf, false))
 
 ### 合并各个task计算的相同key的结果
-*    dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
+*   dep.aggregator.get.combineValuesByKey(keyValuesIterator, context)
+
+###  执行指定的排序
+*   通过ExternalSorter排序
 
 
 
-##  SortShuffleWriter
+##  SortShuffleWriter（不支持SerializedShuffle也不支持BypassMergeSortShuffle的情况）
 
 ### 图解
 ![](../images/spark_shuffle_writer.jpg)

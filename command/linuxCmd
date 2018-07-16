@@ -31,6 +31,9 @@ LINUX通过下面的命令可以开启允许对外访问的网络端口：
 
 
 
+
+
+
 30 4 * * 1 . /etc/profile;/bin/sh /home/spark/ml-schedulers/bin/contributed_users_collector.sh
 
 10 3 * * * . /etc/profile;/bin/sh /home/spark/ml-schedulers/bin/ad_action_statistics_collector.sh 116
@@ -176,3 +179,12 @@ vim /etc/sysconfig/iptables
 
 公钥私钥验证
 ssh-keygen -l
+
+
+supervisorctl
+conf : /etc/supervisord.d/
+更新新的配置到supervisord
+supervisorctl update
+
+mysql centos7
+https://blog.csdn.net/runner1920/article/details/79495368

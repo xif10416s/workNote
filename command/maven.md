@@ -3,6 +3,8 @@ mvn dependency:sources -DdownloadSources=true
 mvn dependency:sources -DincludeGroupIds=org.slf4j -Dclassifier=sources -DdownloadSources=true
 无法导入source:
 -Xmx1024m -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=1086
+导入 cdh 依赖
+https://blog.csdn.net/u010453283/article/details/78266520
 
       <dependency>
             <groupId>org.apache.hadoop</groupId>

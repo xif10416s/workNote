@@ -17,11 +17,12 @@ default_timezone = CST
 ```
 
 ## command 
-*   nohup airflow webserver -p 8080 >> ~/airflow/logs/webserver.logs &
-*   nohup airflow scheduler >> ~/airflow/logs/scheduler.logs &
+*   nohup airflow webserver -p 8080 >> /data/airflow/logs/webserver.logs &
+*   nohup airflow scheduler >> /data/airflow/logs/scheduler.logs &
 *   ps -eaf | grep airflow
 *   ps -ef |grep airflow-webserver |awk '{print $2}'|xargs kill -9
 *   ps -ef |grep 'airflow webserver' |awk '{print $2}'|xargs kill -9
+*   ps -ef |grep 'airflow scheduler' | awk '{print $2}'|xargs kill -9
 *   airflow delete_dag  tutorial  -f
 
 

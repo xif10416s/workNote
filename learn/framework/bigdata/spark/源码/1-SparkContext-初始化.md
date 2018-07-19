@@ -1,4 +1,9 @@
 #   SparkContext -- v 2.2
+*   Spark的对外接口，代表了与spark 集群交互的连接,负责向调用这提供Spark的各种功能
+*   主要功能：
+    -   在集群上，创建RDD,累加器，广播变量等
+*   driver 和 executor都会创建 sparkContext
+
 ##  初始化过程  -- driver
 *   前置条件SparkConf设置：
     -   spark.master 必须设置 
@@ -6,12 +11,36 @@
         -   集群模式为 master地址，如：spark://192.168.0.147:7077
 *   初始化或者从缓存获取SparkContext ：
     -   SparkContext##getOrCreate(config: SparkConf)
-*   初始化context 
-    -   new SparkContext(config)
+*   程序入口点
+    -   new SparkContext(config)  <== v 2.0.0以前
+    -   SparkSession.builder.appName("Simple Application").getOrCreate()  <== v 2.0.0 开始推荐
+        +   提供了一个统一的切入点来使用Spark的各项功能
+        +   SparkConf、SparkContext和SQLContext都已经被封装在SparkSession当中,简化操作
+            *   创建Dataset和Dataframe
+            *   读取各种数据（json,jdbc)
+            *   使用SparkSQL
+            *   存储/读取Hive表
 *   重要组件初始化并启动
     -   SparkUI
         +   客户端webui,默认端口4040
-    -   schedulerBackend [后台线程]:   SchedulerBackend，管理系统，决定如何获取资源，配合TaskSchedulerImpl运行task
+    -   schedulerBackend [后台线程]:管理系统，与master,worker通信，决定如何获取资源，配合TaskSchedulerImpl运行task
+        +   具体实现类：
+            *   local模式：
+                -   LocalSchedulerBackend
+            *   spark standalone模式：
+                -   StandaloneSchedulerBackend
+            *   其他模式，通过外部加载方式动态调用:
+                -   加载META-INF.services文件中的配置的ExternalClusterManager实现类
+                -   实例化类，并调用canCreate方法匹配url，匹配成功的通过该Manager创建对应的schedualBackend，与taskScheduler
+                -   yarn模式(源码位置：resource-managers/yarn)：
+                    +   在resources的META-INF.services文件中配置为：org.apache.spark.scheduler.cluster.YarnClusterManager
+                    +   YarnClusterManager#canCreate实现为判断masterURL == "yarn"
+                    +   TaskScheduler创建：YarnClusterManager#createTaskScheduler
+                        *   cluster模式：YarnClusterScheduler
+                        *   client模式：YarnScheduler
+                    +   SchedulerBackend创建：YarnClusterManager#createSchedulerBackend
+                        *   cluster模式：YarnClusterSchedulerBackend
+                        *   client模式：YarnClientSchedulerBackend
         +   意图：不同集群资源获取方式不一样，相对于不同的集群提供不同的策略实现
         +   接口方法
             *   reviveOffers,找到合适work的合适的executor资源给task运行   
@@ -46,11 +75,21 @@
             *   消息派发 ==>  Dispatcher
                 -   负责将netty server接受到的rpc 消息路由到对应的endpoint处理
             *   使用netty client发送rpc消息
+            *   outboxes:消息发送缓冲区
         +   SerializerManager：为spark各种组件提供序列化，压缩，加密等配置信息
+            *   conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer") 使用kryo序列化方式代替默认java序列化提高性能,适用RDD api
+            *   DataFrame 使用指定的编码器进行序列化
         +   BroadcastManager：消息广播管理
         +   MapOutputTrackerMaster(for driver)/MapOutputTrackerWorker(for execute)：一个map,用来跟踪 stage中输出内容的位置，key为shuffleid,value为一组blockManagerId
         +   ShuffleManager: Shuffle管理
-            *   driver or executor  created in SparkEnv
+            *   在driver 和 每个 executor 的SparkEnv 中创建
+            *   主要方法：
+                -   registerShuffle，注册一个shuffle操作
+                -   getWriter：给某个partition获取一个writer,在executors 上 map 任务是调用
+                    +   ShuffleWriter：实现具体shuffle操作，排序，写文件
+                -   getReader：在executors上 reduce操作时调用，获取一个reader
+                    +   ShuffleReader: 将map时候shuffle的文件组合成排序后的partition数据
+            *   SortShuffleManager：具体实现类
         +   MemoryManager： 内存管理
             *   控制内存在execution 和 storage之间共享
             *   execution memory：
@@ -73,7 +112,8 @@
                 -   memoryStore
                 -   diskStore
 *   启动线程
-    -   Dispatcher , 线程前缀 dispatcher-event-loop默认线程数=可用cpu数，
+    -   NettyRpcEnv#Dispatcher , 线程前缀 dispatcher-event-loop默认线程数=可用cpu数，
+        +   sparkEnv中rpcEnv初始化创建
         +   Runtime.getRuntime.availableProcessors()
         +   派发netty server接收到的rpc消息，找到合适的endpoint处理
     -   TransportServer,线程前缀 rpc-server,默认工作线程 8个
@@ -191,7 +231,7 @@
         +   所有需要发送的消息都放入Outbox的LinkedList[OutboxMessage]的队列中
         +   只有一个线程负责处理这个队列的消息，发送给指定的地址
         +   起到了异步和缓冲的作用
-    -   消息接受
+    -   消息接受信箱Inbox
         +   netty server接受到的请求首先进入了Dispatcher的LinkedBlockingQueue[EndpointData]对应接受远程消息这个过程起到异步缓冲的作用
         +   Dispatcher启动多个线程处理这个队列的消息，找到对应的Inbox放入LinkedList[InboxMessage]，对于同一个endpoint的处理异步和缓冲的作用
 

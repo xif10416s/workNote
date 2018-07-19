@@ -49,13 +49,22 @@ ParallelCollectionRDD#deps = nil
 *   RangeDependency extends NarrowDependency
     -   union
 
-##  Partition ,分区
-###  子类
+##  Partition ,分区，逻辑上的数据块，并行处理的基础单位，一个partition对应一个并行处理任务
+*   带一个索引，表示分区号
+*   描述如何切分物理数据成逻辑数据块
+
+###  常用partition
 *   ParallelCollectionPartition
     -   对应ParallelCollectionRDD
     -   重写了writeObject，readObject，发送task执行时调用，如何序列化partition
-*   ShuffledRDDPartition
+*   org.apache.spark.rdd.JdbcPartition
+    -   根据某个long key 范围平均划分partition数的数据
+        +   JdbcPartition(idx: Int, val lower: Long, val upper: Long)
+*   org.apache.spark.sql.execution.datasources.jdbc.JDBCPartition
+    -   根据where条件划分
+        -   JDBCPartition(whereClause: String, idx: Int)
 *   HadoopPartition
+    -   HadoopPartition(rddId: Int, override val index: Int, s: InputSplit)
 
 ## 主要方法
 *   def compute(split: Partition, context: TaskContext): Iterator[T]

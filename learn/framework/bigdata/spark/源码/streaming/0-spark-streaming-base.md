@@ -236,6 +236,7 @@ SocketInputDStream
     -   周期任务会定时触发一次rdd划分
 *   rdd的任务数也就是patition数为topic的partition数
 *   总的consumer数 = driver一个consumer + 并发rdd执行task数的consumer
+*   定时周期任务会触发OutputStream的generateJob任务，会调用最终父类的compute的方法初始化RDD
 *   offset处理相关：
     -   程序启动初始位置如何确定：
         +   Subscribe初始化时可以指定offset
@@ -244,7 +245,7 @@ SocketInputDStream
         +   当以上两种初始offset都没指定时，通过初始参数auto.offset.reset，决定初始位置
             *   latest：最新的位置
             *   earliest：起始位置
-*    exactly-once 语义（程序维护offset,保存和读取）：
+*   exactly-once 语义（程序维护offset,保存和读取）：
     -    https://spark.apache.org/docs/latest/streaming-kafka-0-10-integration.html
     -    Checkpoints 方式：ssc.checkpoint(checkpointDirectory)
         +    只修要打开checkpoint,offsets会被保存在checkpoint

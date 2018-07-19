@@ -268,12 +268,15 @@ val spark = SparkSession
       .appName("Spark Pi")
 ```
 
+## 其他参数
+*   spark.locality.wait和spark.locality.wait.process，spark.locality.wait.node, spark.locality.wait.rack这几个参数影响了任务分配时的本地性策略的相关细节。
+
 ## Executor 创建   -- Spark standalone
 ##  worker | executor | tasks
 *   资源分配
     -   worker1 , cores = 4
     -   worker2 , cores = 4
-*   executor 个数 = 最大可用 cpu 数 / 每个 executor 指定cup 数
+*   executor 个数 = 最大可用 cpu 数 / 每个 executor 指定cpu 数
     -   spark.executor.cores 不指定，一个worker  使用一个 executor , 分配当前work 所有可用 cpu 数
 *   并发线程数 =  最大可用cpu 数 /  spark.task.cpus(每个task 使用的cpu 数)
     -   一个task 至少使用 1个 cpu
@@ -294,6 +297,9 @@ val spark = SparkSession
 *   --executor-memory 20G  每个executor 多少内存
 *   --num-executors 50    定义多少个executor
 *   --executor-cores 2   每个executor 多少cpu
+
+### spark on yarn cluster vs client
+*   http://blog.cloudera.com/blog/2014/05/apache-spark-resource-management-and-yarn-app-models/
 
 $SPARK_HOME/bin/spark-submit --master yarn --deploy-mode client --name test  --num-executors 6 --executor-cores 3   testprime.py
 

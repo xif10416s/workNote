@@ -1,6 +1,18 @@
 #   shuffle过程
 *   https://blog.csdn.net/u012102306/article/details/51637732
 
+#   shuffle 是什么：
+*   为什么要shuffle：
+    -   针对两类操作： 聚合（groupby） +  排序（sortby)
+        +   这两类操作每个partition需要用到所有其他所有partition的数据，也就是宽依赖
+-   shuffle做了什么：
+        +   分成两个阶段：
+            *   map端shuffle witer
+                -   读取数据源，每个partition根据key hash数据分成n个组，n为partition数，相当于根据key 的hash重新分区了数据，达到单个partition数据group 的效果
+                -   一个partiton的分组数据会写入到 >= n的临时文件，最后合并成一个大的文件
+            *   reduce端的shuffle reader
+                -   每个分区根据hash key的分组方式读取本地或者远程的相对应的分区的数据，最终每个分区变成了新的分组后的分区的数据，达到了全局分组的效果
+
 ##  shuffle处理器，一共三类：
 ### BypassMergeSortShuffleHandle 对应 BypassMergeSortShuffleWriter
 *   使用场景：

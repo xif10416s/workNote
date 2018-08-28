@@ -253,6 +253,8 @@ SocketInputDStream
         +    程序代码被修改后无法从checkpoint恢复 //TODO
     -   Kafka提交方式:
         +   enable.auto.commit=false关闭自动提交
+            *   exactly-once 语义整体流程 = 拉取数据 + 处理 + 保存成功
+            *   kafka consumer 只负责拉取数据，处理 + 保存结果并不保证，所以不能让kafka consumer 自动提交，有可能处理 + 保存没完成
         +   程序输出操作完成时，提交offset
             *   val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
             *   stream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)

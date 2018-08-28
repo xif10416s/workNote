@@ -1,4 +1,4 @@
-#   spark 基本处理流程
+#   spark 基本处理流程--RDD
 
 ##  org.apache.spark.examples.SparkPi处理分析
 
@@ -30,9 +30,9 @@ val spark = SparkSession
     -   new ParallelCollectionRDD[T]，新建了一个rdd,继承自RDD
     -   数据源就是本地内存的 data: Seq[T] = 1 until 200000
     -   重写了最基本的RDD的三个方法
-        +   getPartitions，获取所有的分区ParallelCollectionPartition
+        +   数据逻辑分区 ==> getPartitions，获取所有的分区ParallelCollectionPartition
             -   numSlices = 2 ，所以 data序列切分成2个分区([1-100000][100001-200000])
-        +   compute, 返回指定ParallelCollectionPartition数据的Iterator
+        +   单个分区数据处理 ==> compute, 返回指定ParallelCollectionPartition数据的Iterator
             *   `new InterruptibleIterator(context, s.asInstanceOf[ParallelCollectionPartition[T]].iterator)`
             *   ParallelCollectionPartition 的iterator 就是`values.iterator`,也就是[1-100000]或者[100001-200000]list的Iterator
         *   getPreferredLocations
@@ -56,7 +56,7 @@ val spark = SparkSession
 ### 四、rdd的reduce操作，属于action，触发执行操作 `reduce(_ + _)`
 *   RDD#reduce
 *    val cleanF = sc.clean(f) ， 同上
-*    定义partition的reducePartition函数,ResultStage会保存这个函数，提交任务时被序列化广播出去，</br>
+*    定义partition的reducePartition函数,ResultStage会保存这个函数，提交任务时被序列化广播出去，map端先合并，比group by好</br>
 ```
         val reducePartition: Iterator[T] => Option[T] = iter => {
           if (iter.hasNext) {
@@ -119,12 +119,12 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
     -   val partitionsToCompute: Seq[Int] = stage.findMissingPartitions()
 *   给每个partition找到合适的worker计算节点，getPreferredLocs（rdd: RDD[_], partition: Int）: Seq[TaskLocation] ，就是什么partition在什么host上执行的map
     -   先检查是否缓存过，cached = getCacheLocs(rdd)(partition)，直接返回缓存的地址
-    -   检查rdd是否有优选的地址preferredLocations(split: Partition)，不同rdd有特定的实现，主要目的为了数据本地和，让计算节点尽量读取本机的数据，减少网络读取数据，如：
+    -   检查rdd是否有优选的地址preferredLocations(split: Partition)，不同rdd有特定的实现，主要目的为了数据本地化，让计算节点尽量读取本机的数据，减少网络读取数据，如：
         +   KafkaRDD#getPreferredLocations
             *   优选策略为：需要读取的kafka数据所在的主机的spark的worker的主机上执行
             *   val prefExecs = if (null == prefHost) allExecs else allExecs.filter(_.host == prefHost)
     -   检查当前rdd是否有窄依赖，如果有，就与父rdd的地址一致
-*   序列化并广播算法：计算任务是要被发送到worker节点的executor中执行
+*   序列化并广播算法：计算任务是要被发送到worker节点的executor中执行 --*rdd + func* 被序列化
     -   ShuffleMapStage =>closureSerializer.serialize((stage.rdd, stage.shuffleDep)
     -   ResultStage =>closureSerializer.serialize((stage.rdd, stage.func): AnyRef
         +   stage.func为reduce函数
@@ -143,7 +143,7 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
             *   schedulableQueue = new ConcurrentLinkedQueue[Schedulable]
         +   所有需要执行的TaskSetManager，被放入改队列，安排执行
 
-####   申请资源，StandaloneSchedulerBackend#reviveOffers
+####   申请资源（不同集群不同的SchedulerBackend），StandaloneSchedulerBackend#reviveOffers
 *   通过driverEndpoint发送消息给StandaloneSchedulerBackend#makeOffers处理，
     -   找到所有可以运行的Executors，`val activeExecutors = executorDataMap.filterKeys(executorIsAlive)`
     -   统计可用Executors的空闲资源workOffers，一组WorkerOffer，`new WorkerOffer(id, executorData.executorHost, executorData.freeCores)`
@@ -157,6 +157,10 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
     -   遍历所有task
     -   生成taskid,val taskId = sched.newTaskId(),
     -   序列化task，serializedTask: ByteBuffer
+        +   DagScheduler#submitMissingTasks时序列化并广播了taskBinary，此时序列化的serializedTask是broadcast对象，任务被发送到executor执行时，反序列化的是serializedTask是broadcast对象，通过broadcast对象的value从远程driver端拉取block数据
+            *   taskBinary内容：
+               -   ShuffleMapStage = stage.rdd, stage.shuffleDep
+               -   ResultStage = stage.rdd, stage.func
     -   生成task描述，new TaskDescription
         +   taskId
         +   execId
@@ -192,7 +196,8 @@ val mergeResult = (index: Int, taskResult: Option[T]) => {
 
 ###    Task#run，实际有两种子类实现runTask方法
 ####    ResultTask#runTask，执行并将结果返回给driver
-*   从广播中反序列化出rdd和相应的运算函数func,`val (rdd, func) = ser.deserialize[(RDD[T], (TaskContext, Iterator[T]) => U)]`
+*   ResultTask 对应的序列化task内容为 ：rdd 和 func 在deiver划分任务的时执行了变量广播，executor运行任务的时候是使用的广播变量，所以先调用taskBinary.value，拉取广播序列化数据，在反序列化成 rdd + func对象
+从广播变量中反序列化出rdd和相应的运算函数func,`val (rdd, func) = ser.deserialize[(RDD[T], (TaskContext, Iterator[T]) => U)]`
 *   执行计算，`func(context, rdd.iterator(partition, context))`
     1.   rdd.iterator(partition, context),也就是MapPartitionsRDD的compute中对每个元素执行 map定义的函数（随机2个数字，计算在圆内为1，否则为0）,一个partition计算10000次
     2.   func函数，是reduce函数，map执行完成，在worker的executor端做合并，减少返回，也就是_+_

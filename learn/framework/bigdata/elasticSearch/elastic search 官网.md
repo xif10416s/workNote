@@ -56,6 +56,11 @@
 *   经常使用的过滤器将被Elasticsearch自动缓存，以提高性能。
 *   过滤（filter）的目标是减少必须由评分查询（query）检查的文档数量
 
+####    post_filter
+*   当你需要对搜索结果和聚合结果做不同的过滤时，你才应该使用 post_filter 
+    -   搜索后结果过滤，聚合结果不过滤
+*   post_filter 的特性是在查询 之后 执行，任何过滤对性能带来的好处（比如缓存）都会完全失去。
+
 
 ### query  -- like
 *   此文档与此查询子句的匹配程度如何
@@ -87,3 +92,79 @@
 ##  Mapping（映射）-- scheam
 *   Mapping是用来定义一个文档（document），以及它所包含的属性（field）是如何存储和索引的。
 *   每一个索引都有一个或多个映射类型，用于在一个索引中把文档划分为具有逻辑关系的分组。比如，用户文档应该存储为user 类型，博客应该放置于blogpost类型下。
+
+
+##  aggregations聚合操作
+*   Bucketing -- 满足特定条件的文档的集合
+    -   key + 规则  ==》 遍历所有文档，将匹配规则的文档放入对应key的bucket(桶内)
+        +   根据key 分组
+    -   可以有sub Bucketing aggregations
+*   Metric -- 指标
+    -   在一组文档上计算指标
+*   Matrix -- 矩阵
+    -   不支持script
+*   Pipeline -- 管道
+    -   在上一个聚合的基础是继续聚合操作
+
+###  metrics aggregations
+*   计算字段 = 文档中的字段 or scripts 生成
+*   Avg Aggregation <= 对某个字段 求均值
+*   Weighted Avg Aggregation <= 有2个字段 = 统计字段 + 权重字段 ，计算公式： ∑(value * weight) / ∑(weight) 
+*   Cardinality Aggregation <== 相当于 distinct count 统计不同值的个数
+    -   基于HyperLogLog++算法
+*   Geo Bounds Aggregation <= 地理位置边界
+    -   返回一个包含所有地理位置坐标点的边界的经纬度坐标，这对显示地图时缩放比例的选择非常有用。
+*   Geo Centroid Aggregation <= 给定一组地址计算中心地址
+*   Max Aggregation <= 最大值
+*   Percentiles Aggregation <= 百分位计算
+*   Stats Aggregation <== 综合统计 count，sum,max,min,avg
+*   Value Count Aggregation <== 数量统计，看看这个字段一共有多少个不一样的数值
+
+
+### Bucket Aggregations
+*   Adjacency Matrix Aggregation
+*   Children Aggregation
+*   Composite Aggregation
+*   Date Histogram Aggregation
+    -   日期间隔分布
+*   Diversified Sampler Aggregation
+*   Filter Aggregation
+
+### 别名Aliases
+#### 添加别名
+```
+POST /_aliases
+{
+    "actions" : [
+        { "add" : { "index" : "test1", "alias" : "alias1" } }
+    ]
+}
+
+PUT /{index}/_alias/{name}
+```
+
+#### 删除别名
+```
+POST /_aliases
+{
+    "actions" : [
+        { "remove" : { "index" : "test1", "alias" : "alias1" } }
+    ]
+}
+```
+
+#### 重命名别名
+```
+POST /_aliases
+{
+    "actions" : [
+        { "remove" : { "index" : "test1", "alias" : "alias1" } },
+        { "add" : { "index" : "test2", "alias" : "alias1" } }
+    ]
+}
+```
+
+
+### xpack sql
+*   不支持range ,data_range
+*   http://zhengzf.com/2018/06/20/es/xpack-sqlvselasticsearch-sql/

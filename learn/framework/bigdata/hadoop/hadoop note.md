@@ -51,3 +51,4 @@
 *   三个组件运行在相同JVM,与NameNode在同一主机，不同JVM, ZKFC（DFSZKFailoverController） 进程
     -   一个HA集群2台NameNOde,每个NameNode运行自己的ZKFC进程
 
+https://www.w3cschool.cn/hadoop/xvmi1hd6.html

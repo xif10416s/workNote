@@ -164,6 +164,7 @@
 *   新应用探索阶段使用，使用全部字段
 *   include_in_all 控制某个字段是否要在_all中
 *   _all字段只是一个经过分析的string字段，使用默认的分析器分析，不管值本来指定的分析器，也可以单独指定_all字段的分析器
+*   https://www.jianshu.com/p/0908b9ee65fc
 
 
 

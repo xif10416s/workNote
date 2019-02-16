@@ -10,7 +10,9 @@
     -   Partitions
         +   每个表定义的一个或者多个key,用来决定数据如何被存储
         +   通过key可以快速查找
+        +   一个分区是一个文件目录
     -   Buckets (or Clusters):
+        +   在同一个分区上
         +   同一个分区中，一些列的哈希值放入bucket
         +   避免数据倾斜，桶对于数据抽样再适合不过，同时也有利于高效的map-side Join
 *   formats

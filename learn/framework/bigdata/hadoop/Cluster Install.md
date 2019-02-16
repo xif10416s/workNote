@@ -12,3 +12,7 @@
 
 ## 6.1文档
 *   https://www.cloudera.com/documentation/enterprise/6/6.1.html
+##
+
+##  centos 源
+*   https://www.cnblogs.com/focusonepoint/p/7120861.html

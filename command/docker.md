@@ -1,3 +1,23 @@
+# docker 
+## win10 安装docker
+*   toolbox 安装
+*   修改镜像
+    *   在Windows命令行执行docker-machine ssh [machine-name]进入VM bash
+    *   sudo vi /var/lib/boot2docker/profile
+    *   在--label provider=virtualbox的下一行添加--registry-mirror https://registry.docker-cn.com
+    *   重启docker服务
+*   toolbox win10 修改 proxy <== 不一定有效
+    *    C:\Program Files\Docker Toolbox, find start.sh file. add following two proxy settings:
+        *   export http_proxy="http://127.0.0.1:1080/"
+        *   export https_proxy="http://127.0.0.1:1080/"    
+
+
+
+
+##  centos  初始化
+*   ssh 安装
+
+##  常用操作
 *   拉取ubuntu镜像
     -   sudo docker pull daocloud.io/library/ubuntu:xenial-20160317
     -   sudo docker run -it daocloud.io/library/ubuntu
@@ -20,4 +40,28 @@
     -   docker system prune -a
 
 
+## docker 命令
+*   容器启动 centos
+    *   docker run -it --privileged=true  1e1148e4cc2c  /usr/sbin/init -p 18001:22
+
+## 问题：
+*   D:\Docker Toolbox\docker.exe: Error response from daemon: cgroups: cannot find cgroup mount destination: unknown
+    *   docker-machine ssh default
+    *   sudo mkdir /sys/fs/cgroup/systemd
+        sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+
+*  No space left on device Docker toolbox
+```
+https://forums.docker.com/t/no-space-left-on-device-docker-toolbox/37681
+ WARNING: This will delete all existing containers or images used by the docker VM. Please be aware that you might lose data from non-Divio Cloud related containers as well!
+
+You can set disk size using the “–virtualbox-disk-size” flag.
+
+To delete your old VM and create a new one from scratch with 100GB, you’d run:
+
+$ docker-machine rm default
+
+$ docker-machine create -d virtualbox --virtualbox-disk-size "300000" default
+
 -m 100m --memory-swap=100m
+```

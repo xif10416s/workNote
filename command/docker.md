@@ -40,9 +40,30 @@
     -   docker system prune -a
 
 
+
 ## docker 命令
 *   容器启动 centos
     *   docker run -it --privileged=true  1e1148e4cc2c  /usr/sbin/init -p 18001:22
+*   进入容器
+    *   docker exec -it 8fb956ee65ec  /bin/bash
+*    创建一个卷
+    *   docker volume ls
+    *   $ docker volume create my-vol
+    *   docker volume inspect my-vol
+    *   docker run -it --privileged=true  -v  my-vol:/data centos_base:ssh-jdk  /usr/sbin/init -p 18001:22 
+    *   https://www.cnblogs.com/sammyliu/p/5932996.html
+    *   docker volume rm my-vol
+*   
+Docker数据卷的备份和还原迁移：
+    *   docker run --volumes-from [container name] -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar [container data volume]
+    *  docker run --rm -v my-vol:/volume -v $pwd/backup:/backup centos_base:ssh-jdk sh -c 'cp -r /volume /backup'
+    *     docker run --volumes-from [container name] -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar [container data volume]
+    *   http://note.qidong.name/2018/11/docker-migration/
+        *   docker run --rm -d --name test -v test-vol:/data test-img tail -f /dev/null
+f4ff81f4c31025ff476fbebc2c779a915b43ba5940b5bcc42e3ef9b1379eaeab
+        *   docker run --rm -v test-vol:/volume -v $PWD:/backup alpine tar cvf /backup/backup.tar volumes-from
+    *   docker run --rm -v my-vol:/volume -v $pwd/backup:/backup centos_base:ssh-jdk tar cvf /backup/backup.tar volume
+    *   docker run --rm -v my-vol:/volume -v $pwd/backup:/backup centos_base:ssh-jdk tar xf /backup/backup.tar
 
 ## 问题：
 *   D:\Docker Toolbox\docker.exe: Error response from daemon: cgroups: cannot find cgroup mount destination: unknown
@@ -61,7 +82,11 @@ To delete your old VM and create a new one from scratch with 100GB, you’d run:
 
 $ docker-machine rm default
 
-$ docker-machine create -d virtualbox --virtualbox-disk-size "300000" default
+$ docker-machine create -d virtualbox --virtualbox-disk-size "400000" default
 
 -m 100m --memory-swap=100m
 ```
+
+共享名称
+\\?\c:\Users
+\\?\E:\vm_share

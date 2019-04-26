@@ -44,6 +44,9 @@
 ## docker 命令
 *   容器启动 centos
     *   docker run -it --privileged=true  1e1148e4cc2c  /usr/sbin/init -p 18001:22
+    *   IP是可以指定的 - -https://www.jianshu.com/p/57532f6fe7b0
+        *    docker network create -o "com.docker.network.bridge.name"="test01" --subnet 172.20.0.0/16 test01
+        *   docker run -it  --rm --ip 172.20.100.100 --net test01 --privileged=true   centos_base:ssh-jdk  /usr/sbin/init -p 18001:22
 *   进入容器
     *   docker exec -it 8fb956ee65ec  /bin/bash
 *    创建一个卷
@@ -90,3 +93,12 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "400000" default
 共享名称
 \\?\c:\Users
 \\?\E:\vm_share
+
+# docker compose
+*   https://blog.csdn.net/pushiqiang/article/details/78682323
+*   compose 文件是一个定义服务、 网络和卷的 YAML 文件 。Compose 文件的默认路径是 ./docker-compose.yml
+*   https://blog.csdn.net/qq_36148847/article/details/79427878
+
+
+# Dockerfile
+*   

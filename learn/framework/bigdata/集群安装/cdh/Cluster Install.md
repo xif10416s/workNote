@@ -18,12 +18,21 @@
 *   https://www.cnblogs.com/focusonepoint/p/7120861.html
 
 ## 具体步骤
-### centos 7.6 准备及基础配置 ssh + jdk
+### centos 7.6 准备及基础配置 ssh + jdk == root / root
+*	数据集创建
+	*	docker volume rm  cdh_name
+	*	docker volume rm  cdh_data1
+	*	docker volume rm  cdh_data2
+	*	docker volume create cdh_name
+	*	docker volume create cdh_data1
+	*	docker volume create cdh_data2
+*	创建网卡 - 固定ip
+	*	 docker network create -o "com.docker.network.bridge.name"="test01" --subnet 172.20.0.0/16 test01	
 *	直接拉取改造
 	*	docker pull bayern0815/centos7.6-jdk1.8-ssh:0.0.1
 *	拉去官网centos7.6 	
 *	docker run -it --privileged=true -p 18001:22 1e1148e4cc2c  /usr/sbin/init
-*	docker run -it  -h="master" --name master  -d --privileged=true --restart=always   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p28057:50070 -p28088:8088 -p28010:16010 -p28006:60010 --add-host=slave1:172.17.0.3 centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
+*	docker run -it --rm --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name:/data   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010 --add-host=slave1:172.20.100.121  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
 *	yum install wget
 *	yum install vim
 *	源配置 -- https://blog.csdn.net/inslow/article/details/54177191
@@ -170,9 +179,9 @@ innodb_flush_method = O_DIRECT
 			*	rpm -ivh  oracle-j2sdk1.8-1.8.0+update141-1.x86_64.rpm
 	*	docker commit e13154d4ff26     centos_cdh6.1:datanode
 *	docker node 启动
-	*	docker run -it  -h="slave1" --name slave1  -d --privileged=true --restart=always  --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
-	*	docker run -it  -h="slave2" --name slave2  -d --privileged=true --restart=always  --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
-	*	docker run -it  -h="slave3" --name slave3  -d --privileged=true --restart=always  --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
+	*	docker run -it  --rm --ip 172.20.100.121 --net test01  -h="slave1" --name slave1  -d --privileged=true  -v cdh_data1:/data  --add-host=master:172.20.100.120 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
+	*	docker run -it  -h="slave2" --name slave2  -d --privileged=true  -v cdh_data2:/data --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
+	*	docker run -it  -h="slave3" --name slave3  -d --privileged=true  -v cdh_data3:/data  --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
 	*	hosts修改
 ```
 172.17.0.2      master
@@ -200,12 +209,25 @@ ShareLib 根目录 /data/user/oozie
 NodeManager 本地目录 /data/yarn/nm
 ```
 
+## 端口页面
+*	cdh 安装页面：http://192.168.99.100:28002/cmf/login  
+	*	admin/admin
+	*	CDH 版本:CDH-6.1.0-1.cdh6.1.0.p0.770702
+	*	数据库
+		*	https://www.cloudera.com/documentation/enterprise/latest/topics/install_cm_mariadb.html
+		*	密码：root
+		*	metastore  hive root
+		*	amon,amon,root
 
 
 ### 运行测试
-*	spark-shll:
+*	spark-shell:
 	*	 Permission denied: user=root, access=WRITE, inode="/user":hdfs:supergroup:drwxr-xr-x
 		*	usermod -s /bin/bash hdfs
 	*	用hdfs账号登录
 
     
+### hive 测试
+*	Given NMToken for application : appattempt_1556161534641_0003_000002 is not valid for current node manager.expected : slave2:8041 found : slave1:8041 
+	*	ip改变了，对不上
+

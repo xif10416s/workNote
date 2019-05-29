@@ -68,6 +68,14 @@ f4ff81f4c31025ff476fbebc2c779a915b43ba5940b5bcc42e3ef9b1379eaeab
     *   docker run --rm -v my-vol:/volume -v $pwd/backup:/backup centos_base:ssh-jdk tar cvf /backup/backup.tar volume
     *   docker run --rm -v my-vol:/volume -v $pwd/backup:/backup centos_base:ssh-jdk tar xf /backup/backup.tar
 
+
+
+## 端口修改
+*   /var/lib/docker/containers/[hash_of_the_container]/hostconfig.json
+    *   iptables -t nat -A DOCKER -p tcp --dport 28100 -j DNAT --to-destination 172.20.100.120:10000
+    *   iptables -t nat -A DOCKER -p tcp --dport 18888 -j DNAT --to-destination 172.20.100.120:7180
+
+
 ## 问题：
 *   D:\Docker Toolbox\docker.exe: Error response from daemon: cgroups: cannot find cgroup mount destination: unknown
     *   docker-machine ssh default
@@ -101,4 +109,3 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "400000" default
 
 
 # Dockerfile
-*   

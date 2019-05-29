@@ -32,7 +32,7 @@
 	*	docker pull bayern0815/centos7.6-jdk1.8-ssh:0.0.1
 *	拉去官网centos7.6 	
 *	docker run -it --privileged=true -p 18001:22 1e1148e4cc2c  /usr/sbin/init
-*	docker run -it --rm --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name:/data   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010 --add-host=slave1:172.20.100.121  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
+*	docker run -it  --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name:/var -v cdh_name1:/etc -v cdh_name2:/opt   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010   -p 28100:10000 -p 28888:8888  --add-host=slave1:172.20.100.121  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
 *	yum install wget
 *	yum install vim
 *	源配置 -- https://blog.csdn.net/inslow/article/details/54177191
@@ -179,7 +179,7 @@ innodb_flush_method = O_DIRECT
 			*	rpm -ivh  oracle-j2sdk1.8-1.8.0+update141-1.x86_64.rpm
 	*	docker commit e13154d4ff26     centos_cdh6.1:datanode
 *	docker node 启动
-	*	docker run -it  --rm --ip 172.20.100.121 --net test01  -h="slave1" --name slave1  -d --privileged=true  -v cdh_data1:/data  --add-host=master:172.20.100.120 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
+	*	docker run -it --ip 172.20.100.121 --net test01  -h="slave1" --name slave1  -d --privileged=true  -v cdh_data1:/var --add-host=master:172.20.100.120 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
 	*	docker run -it  -h="slave2" --name slave2  -d --privileged=true  -v cdh_data2:/data --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
 	*	docker run -it  -h="slave3" --name slave3  -d --privileged=true  -v cdh_data3:/data  --add-host=master:172.17.0.2 centos_cdh6.1:datanode   /usr/sbin/init sh -c '/etc/rc.local;'
 	*	hosts修改
@@ -218,6 +218,8 @@ NodeManager 本地目录 /data/yarn/nm
 		*	密码：root
 		*	metastore  hive root
 		*	amon,amon,root
+		*	oozie,oozie,root
+		*	hue,hue,root
 
 
 ### 运行测试
@@ -230,4 +232,10 @@ NodeManager 本地目录 /data/yarn/nm
 ### hive 测试
 *	Given NMToken for application : appattempt_1556161534641_0003_000002 is not valid for current node manager.expected : slave2:8041 found : slave1:8041 
 	*	ip改变了，对不上
+```
+CREATE  TABLE test (  
+      id int)
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ;
 
+insert into test values(1);
+```

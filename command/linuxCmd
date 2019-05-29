@@ -188,3 +188,7 @@ supervisorctl update
 
 mysql centos7
 https://blog.csdn.net/runner1920/article/details/79495368
+
+
+#   vituralbox 共享目录 
+*	sudo usermod -aG vboxsf $(whoami)

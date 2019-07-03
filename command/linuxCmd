@@ -57,6 +57,8 @@ nautilus
 find . -type f -size +800M  -print0 | xargs -0 ls -l
 find . -type f -size +800M  -print0 | xargs -0 du -h
 
+一级目录
+du -h -d1
 
 查找并拷贝
 find /Users/seki/git/hsp/server-service/server-service/ad-auto-dispatch/**/ -name "*.java" -exec cp {}  "/Users/seki/Downloads/hsp_sys/自动派发系统/" \;
@@ -130,8 +132,14 @@ system_profiler SPUSBDataType
 kill 
 ps -ef |grep hello |awk '{print $2}'|xargs kill -9
 
-cpu
-cat /proc/cpuinfo| grep "cpu cores"| uniq
+查看物理cpu个数
+grep 'physical id' /proc/cpuinfo | sort -u
+
+查看核心数量
+grep 'core id' /proc/cpuinfo | sort -u | wc -l
+
+查看线程数
+grep 'processor' /proc/cpuinfo | sort -u | wc -l
 
 
 scp local_file remote_username@remote_ip:remote_folder
@@ -195,5 +203,23 @@ https://blog.csdn.net/runner1920/article/details/79495368
 *	blkid
 *	--磁盘挂载
 mkdir /data
-mkfs.ext4 /dev/vdb1
-mount /dev/vdb1 /data
+mkfs.ext4 /dev/vdb
+mount /dev/vdb /data
+
+
+固定ip
+centos
+https://blog.csdn.net/hellocsz/article/details/82587936
+/etc/sysconfig/network-scripts/
+
+
+
+图形化
+https://blog.csdn.net/zhangtao_heu/article/details/81989147
+
+ubuntu
+https://www.cnblogs.com/chenfool/p/7985909.html
+查看版本
+lsb_release -a
+查看网卡
+ip link

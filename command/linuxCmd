@@ -198,11 +198,16 @@ mysql centos7
 https://blog.csdn.net/runner1920/article/details/79495368
 
 
+
+#   vituralbox 共享目录 
+*	sudo usermod -aG vboxsf $(whoami)
+
 挂载目录
 *	 fdisk -l
 *	blkid
 *	--磁盘挂载
 mkdir /data
+
 mkfs.ext4 /dev/vdb
 mount /dev/vdb /data
 
@@ -223,3 +228,6 @@ https://www.cnblogs.com/chenfool/p/7985909.html
 lsb_release -a
 查看网卡
 ip link
+=======
+
+

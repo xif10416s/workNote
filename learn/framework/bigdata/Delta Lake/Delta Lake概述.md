@@ -24,7 +24,12 @@
 	*   https://blog.csdn.net/xinshucredit/article/details/88641697
 
 ##  概念
-*	Delta Lake是一个存储层
+*	Delta Lake是一个可靠存储层
 *	为Apache Spark和其他大数据引擎提供可伸缩的ACID事务，让用户可以基于HDFS和云存储构建可靠的数据湖为Apache Spark和其他大数据引擎提供可伸缩的ACID事务，让用户可以基于HDFS和云存储构建可靠的数据湖
 *	Delta Lake还提供了内置的数据版本控制，可以方便地回滚以及重新生成报告。
 *	https://blog.csdn.net/oscarun/article/details/89530621
+*	使用versioned Parquet files文件格式来存储数据到云存储，记录所有事务日志，提供ACID支持
+*	Delta Lake does not support multi-table transactions and foreign keys. Delta Lake supports transactions at the table level.
+*	通常使用Date字段作为分区
+	*	使用基数少的字段但作为分区，userid不适合
+	*	至少一个分区1个g以上数据量

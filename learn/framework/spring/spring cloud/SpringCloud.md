@@ -1,6 +1,29 @@
 # SpringBoot.md
 *   https://github.com/tengj/SpringBootDemo/tree/master
 *   https://springcloud.cc/spring-cloud-dalston.html
+*   https://gitee.com/didispace/SpringBoot-Learning
+
+## 学习网站
+*   https://www.cnblogs.com/edisonchou/p/java_spring_cloud_foundation_sample_list.html
+*   http://blog.didispace.com/spring-cloud-learning/
+*   http://blog.didispace.com/spring-cloud-starter-dalston-1/
+*   demo
+    -   https://github.com/dyc87112/SpringCloud-Learning/tree/master/2-Dalston%E7%89%88%E6%95%99%E7%A8%8B%E7%A4%BA%E4%BE%8B
+
+## demo
+*   Spring Boot 2.0.6 + Spring Cloud Finchley.SR2
+    *       https://github.com/Leif160519/SpringCloudDemo
+
+## spring cloud版本选择
+*   https://spring.io/projects/spring-cloud#learn
+
+## 文档路径
+*   https://cloud.spring.io/spring-cloud-static/Finchley.SR2/multi/multi_spring-cloud.html
+
+## 整体架构
+*   https://www.cnblogs.com/wlzjdm/p/7811536.html
+*   http://www.itmuch.com/spring-cloud/zuul/zuul-ha/
+*   https://www.cnblogs.com/ityouknow/p/8391593.html
 
 ## starter
 *   功能模块的依赖封装，简化依赖
@@ -9,6 +32,13 @@
         +   org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.yazuo.framework.core.logging.LoggingAutoConfiguration
 *   http://www.importnew.com/24164.html
 
+## 常用组件
+### zuul -- 网关
+*   http://dockone.io/article/482
+*   https://www.cnblogs.com/ityouknow/p/6944096.html
+
+### config server
+*   https://www.jianshu.com/p/b43f41cdcbe2
 
 ##  常用starter
 ###  微服务相关

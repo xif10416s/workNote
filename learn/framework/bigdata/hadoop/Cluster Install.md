@@ -16,3 +16,4 @@
 
 ##  centos 源
 *   https://www.cnblogs.com/focusonepoint/p/7120861.html
+*   https://www.cnblogs.com/zzsdream/p/7405083.html

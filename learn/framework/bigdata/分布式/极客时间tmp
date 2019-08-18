@@ -1,0 +1,39 @@
+极客时间tmp
+##  Distributed systems  
+http://book.mixu.net/distsys/single-page.html
+1. 分布式设计目标
+such as scalability, availability, performance, latency and fault tolerance;
+
+Scalability：is the ability of a system, network, or process, to handle a growing amount of work in a capable manner or its ability to be enlarged to accommodate that growth.
+系统，网络，或者处理流程通过扩展来适应这种不断增长的任务，
+
+2. 分布式算法
+
+
+3.Design techniques: partition and replicate
+分区：并行计算能力，提高性能，提高可用性，限制数据量，独立处理
+副本：容错能力，并行计算能力，减少延迟
+
+
+Consistency: all nodes see the same data at the same time.
+Availability: node failures do not prevent survivors from continuing to operate.
+Partition tolerance: the system continues to operate despite message loss due to network and/or node failure
+
+The CA and CP system designs both offer the same consistency model: strong consistency. The only difference is that a CA system cannot tolerate any node failures; a CP system can tolerate up to f faults given 2f+1 nodes in a non-Byzantine failure model (in other words, it can tolerate the failure of a minority f of the nodes as long as majority f+1 stays up). The reason is simple:
+
+
+A CA system does not distinguish between node failures and network failures, and hence must stop accepting writes everywhere to avoid introducing divergence (multiple copies). It cannot tell whether a remote node is down, or whether just the network connection is down: so the only safe thing is to stop accepting writes.
+
+1，Two phase commit (2PC)
+1.1 CA
+1.2 阻塞，假设所有节点不丢失数据并且不会崩溃
+
+
+2，Partition-tolerant consensus algorithms: Paxos, Raft, ZAB
+Paxos. Paxos is one of the most important algorithms when writing strongly consistent partition tolerant replicated systems. It is used in many of Google's systems, including the Chubby lock manager used by BigTable/Megastore, the Google File System as well as Spanner.
+
+ZAB. ZAB - the Zookeeper Atomic Broadcast protocol is used in Apache Zookeeper. Zookeeper is a system which provides coordination primitives for distributed systems, and is used by many Hadoop-centric distributed systems for coordination (e.g. HBase, Storm, Kafka). Zookeeper is basically the open source community's version of Chubby. Technically speaking atomic broadcast is a problem different from pure consensus, but it still falls under the category of partition tolerant algorithms that ensure strong consistency.
+
+Raft. Raft is a recent (2013) addition to this family of algorithms. It is designed to be easier to teach than Paxos, while providing the same guarantees. In particular, the different parts of the algorithm are more clearly separated and the paper also describes a mechanism for cluster membership change. It has recently seen adoption in etcd inspired by ZooKeeper.
+
+

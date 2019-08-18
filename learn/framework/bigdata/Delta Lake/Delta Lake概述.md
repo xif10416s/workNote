@@ -33,3 +33,21 @@
 *	通常使用Date字段作为分区
 	*	使用基数少的字段但作为分区，userid不适合
 	*	至少一个分区1个g以上数据量
+
+##  官网 --0.3
+*	https://docs.delta.io/0.3.0/delta-update.html
+*	Delta Lake保证向后兼容，新版本都支持旧版本的表读取，旧的版本不能读取新的版本
+*	Delta Lake 事务处理
+	*	Delta Lake的工作原理是将事务日志与数据文件一起存储在表中
+	*	在table目录下，有一个_delta_log目录，存储着一系列原子操作集合的日志，称为delta文件，json格式
+		*	/table/_delta_log/00000000000000000000.json
+	*	为了避免每次加载table时候读取整个事务日志文件，会周期性的创建checkpoint，包含table当前版本所有状态信息
+*	Delta Lake底层存储系统
+	*	Delta Lake 通过LogStore API 访问文件系统，来保证事务处理
+	*	Delta Lake 内建了 LogStore 的实现类， HDFS, S3 ， Azure storage services.
+		*	配置：https://docs.delta.io/latest/delta-storage.html
+*	Table Deletes, Updates, and Merges
+	*	删除操作只是把数据从当前版本中移除，并没有从物理存储系统中移除，旧的版本还是可以查到数据，直到旧版本被清除后
+*	Delta Lake tables支持两种工具命令
+	*	Vacuum -- 清除不再使用的数据，物理删除
+	*	History -- 获取数据历操作记录，版本历史

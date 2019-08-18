@@ -147,6 +147,18 @@ Node 上的 Executor
 *   执行spark-examples
     -   scope="PROVIDED" 删除 or edit run config include provided scope depenicessss
 
+### spark 2.4
+*   https://www.jianshu.com/p/fc121d353dde
+    *   winutils.exe
+    *   下载地址：https://github.com/steveloughran/winutils
+    *   下载后的winutils.exe放到HADOOP_HOME/bin目录下
+*   用git bash以管理员身份运行build/spark-build-info 用以生成spark-version-info.properties文件
+build/spark-build-info ./core/target/extra-resources 2.4.3
+将生成的spark-version-info.properties文件复制到spark-core_2.11-2.4.0-SNAPSHOT.jar的根目录下。(复制之前先检查根
+目录下是否存在spark-version-info.properties，不存在再复制)
+在conf目录下复制log4j.properties.template，重命名为log4j.properties
+将spark\assembly\target\scala-2.11\jars目录下的所有jar包添加到classpath中。
+
 
 
 

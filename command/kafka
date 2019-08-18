@@ -11,7 +11,7 @@ bin/kafka-console-producer.sh --broker-list ip:9092 --topic ml_ad_install_log
 bin/kafka-topics.sh --delete --zookeeper ip:2181 --topic ml_ad_exposure_log
 bin/kafka-topics.sh --create --zookeeper ip:2181 --replication-factor 2 --partitions 4 --topic ml_ad_install_log
 bin/kafka-topics.sh --list --zookeeper localhost:2181
-bin/kafka-console-consumer.sh --zookeeper ukafka-r122nm-1-bj03.service.ucloud.cn --topic test
+bin/kafka-console-consumer.sh --bootstrap-server ukafka-r122nm-1-bj03.service.ucloud.cn --topic test
 bin/kafka-console-producer.sh --broker-list ukafka-r122nm-1-bj03.service.ucloud.cn:9092 --topic test
 
 

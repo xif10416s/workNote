@@ -140,4 +140,3 @@ hiveContext.sql("insert into default.test_orc3 partition(dt='2017-12-02') select
 sdf.write.mode(SaveMode.Append).insertInto("default.test_orc")
 ```
 
-

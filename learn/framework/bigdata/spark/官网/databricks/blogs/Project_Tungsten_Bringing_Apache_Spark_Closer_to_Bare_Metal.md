@@ -1,10 +1,10 @@
-#Project Tungsten -- spark 执行引擎
+# Project Tungsten -- spark 执行引擎
 *   专注提高cpu 和 内存的利用率，使得利用率接近到现代硬件的上限
-####[原文](https://databricks.com/blog/2015/04/28/project-tungsten-bringing-spark-closer-to-bare-metal.html)
+####  [原文](https://databricks.com/blog/2015/04/28/project-tungsten-bringing-spark-closer-to-bare-metal.html)
 
-##Tungsten engine ==> 优化内存和ＣＰＵ的使用，让性能颈瓶为最新计算机的性能，主要针对３点：
+##  Tungsten engine ==> 优化内存和ＣＰＵ的使用，让性能颈瓶为最新计算机的性能，主要针对３点：
 
-####内存管理和二进制处理，充分利用应用程序语义明确地管理内存和消除JVM的对象模型和垃圾收集的开销
+####    内存管理和二进制处理，充分利用应用程序语义明确地管理内存和消除JVM的对象模型和垃圾收集的开销
 
     1.1 4个字节的字符串"abcd",jvm对象中占用４８个字节
 
@@ -27,7 +27,7 @@ Instance size: 24 bytes (reported by Instrumentation API)
 
     通过sun.misc.Unsafe提供的Ｃ语言方式的内存访问（allocate,deallocate,pointer)
 
-####缓存感知计算：利用内存层次结构的算法和数据结构
+####    缓存感知计算：利用内存层次结构的算法和数据结构
 
     2.1使用cpu L1/L2/L3三级缓存
 
@@ -39,7 +39,7 @@ Instance size: 24 bytes (reported by Instrumentation API)
 
     　　内存感知方式　＝＞　key + pointer -->　内存对象value　　｜　排序ｐｏｉｎｔｅｒ－ｋｅｙ就行　不用找对象　
 
-####代码生成：使用代码生成利用现代编译器和CPU
+####    代码生成：使用代码生成利用现代编译器和CPU
 
     3.1 sql 表达式（ａｇｅ＞３５）会被动态生成字节码运行，减少量基本类型的boxing,
 

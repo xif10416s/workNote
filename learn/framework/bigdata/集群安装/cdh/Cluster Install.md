@@ -119,7 +119,7 @@ innodb_flush_method = O_DIRECT
 *	mysql -u root -p
 *   flush privileges;
 *	初始化数据 https://www.cloudera.com/documentation/enterprise/latest/topics/install_cm_mariadb.html ，http://blog.51cto.com/wzlinux/2321433
-
+ 
 ###  cdh manager 安装
 #### 安装 CM Server 和 Agent
 *	scp cloudera-manager.repo root@172.17.0.2:/home

@@ -110,3 +110,16 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "400000" default
 
 # Dockerfile
 *   *   *   *   *   *   
+
+# firfefox rongqi
+```
+docker run -d \
+    --name=firefox \
+    -p 5800:5800 \
+    -v /docker/appdata/firefox:/config:rw \
+    --ip 172.20.100.101 --net test01 \
+    --shm-size 2g \
+    jlesage/firefox
+
+  http://your-host-ip:5800    
+```

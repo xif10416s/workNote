@@ -32,7 +32,7 @@
 	*	docker pull bayern0815/centos7.6-jdk1.8-ssh:0.0.1
 *	拉去官网centos7.6 	
 *	docker run -it --privileged=true -p 18001:22 1e1148e4cc2c  /usr/sbin/init
-*	docker run -it  --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name:/var -v cdh_name1:/etc -v cdh_name2:/opt   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010   -p 28100:10000 -p 28888:8888  --add-host=slave1:172.20.100.121  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
+*	docker run -it  --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name:/var -v cdh_name1:/etc -v cdh_name2:/opt   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010   -p 28100:10000 -p 28888:8888   -p 19870:9870 --add-host=slave1:172.20.100.121  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
 *	yum install wget
 *	yum install vim
 *	源配置 -- https://blog.csdn.net/inslow/article/details/54177191
@@ -239,3 +239,11 @@ CREATE  TABLE test (
 
 insert into test values(1);
 ```
+
+#docker run -it  --ip 172.20.100.101 --net test01 -h="ubuntu" --name ubuntu  -d --privileged=true ubuntu bash
+
+docker run -d --ip 172.20.100.101 --net test01 --name firefox -w=/root -e DISPLAY=$DISPLAY  -v /tmp/.X11-unix:/tmp/.X11-unix  kennethkl/firefox
+http://192.168.99.100:5800/
+
+# httpfs
+*	http://172.20.100.120:14000/webhdfs/v1/?op=liststatus&user.name=root"

@@ -145,7 +145,7 @@ Node 上的 Executor
     -   org.apache.spark.deploy.worker.Worker
     -   spark://xifeideMacBook-Pro.local:7077  -c 2 -m 1G
 *   执行spark-examples
-    -   scope="PROVIDED" 删除
+    -   scope="PROVIDED" 删除 or edit run config include provided scope depenicessss
 
 ### spark 2.4
 *   https://www.jianshu.com/p/fc121d353dde

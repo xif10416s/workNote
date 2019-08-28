@@ -156,10 +156,10 @@
 
 ##  远程通信
 ###  类图
-![](../images/rpc_endpoints_loops_class.jpg)
+![](../../images/rpc_endpoints_loops_class.jpg)
 
 ###  基本流程
-![](../images/base_rpc_loops.jpg)
+![](../../images/base_rpc_loops.jpg)
 
 ###  通信框架netty
 *   底层通过netty的nio通信

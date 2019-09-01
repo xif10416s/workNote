@@ -22,7 +22,7 @@
                 *   [1-structedStreaming-基本流程(v2.2.1).md](learn/framework/bigdata/spark/源码/StructuredStreaming/1-structedStreaming-基本流程(2.2.1).md)  
                 *   [1-structedStreaming-基本流程(v2.3.1).md](learn/framework/bigdata/spark/源码/StructuredStreaming/1-structedStreaming-基本流程(2.3.1).md) 
         +   主要模块
-            +   [通讯模块概要](learn/framework/bigdata/spark/源码/基础/通讯模块/spark通讯模块.md)
+            +   [通讯模块概要](learn/framework/bigdata/spark/源码/基础/通讯模块/spark 通讯模块.md)
     -   阅读
         +   databricks
             *   blogs

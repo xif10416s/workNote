@@ -99,7 +99,7 @@
 *	RpcEndpoint 与 RpcEndpointRef 初始化
 
 
-####  主要应用案例
+####  应用案例
 #####  driver 初始化与 Master 节点通信，注册到master
 *	Driver 启动是需要初始化SparkContext，其中rpcEnv，[SchedulerBackend](https://github.com/xif10416s/workNote/blob/master/learn/framework/bigdata/spark/%E6%BA%90%E7%A0%81/%E5%9F%BA%E7%A1%80/1-SparkContext-%E5%88%9D%E5%A7%8B%E5%8C%96.md)也会初始化
 	*	以StandaloneSchedulerBackend为例，启动时会初始化StandaloneAppClient对象rpcEnv被传入该对象，负责与spark  standalone 集群通信
@@ -118,8 +118,13 @@
 				*	StopAppClient ： master 停止app， 并返回master UnregisterApplication取消注册 -- 来自driver
 				*	RequestExecutors ： 向master请求executor -- 来自driver
 	*	基础流程
-		*	driver一系列初始化，StandaloneAppClient
-
+		*	driver一系列初始化，StandaloneAppClient初始化的时候将ClientEndpoint注册到RPCEnv,可以开始处理投递到AppClient这个终端的消息
+		*	ClientEndpoint 初始化的时候通过SparkContext配置的masterurl初始化master endpointRef并注册到RpcEnv
+		*	通过masterRef 给master发送 RegisterApplication 消息，将driver注册到master 
+			*	发送的消息中附带了ClientEndpoint的引用endpointRef返回给driver
+		*	master本身实现了RpcEndpoint接口，RegisterApplication消息会被接收并处理，将结果消息RegisteredApplication返回给driver
+			*	master从接收到的RegisterApplication中可以获取ClientEndpoint的ref,通过这个引用返回消息给ClientEndpoint
+			*	同时clientendpoint被master记录，可以发送一些集群变化消息给driver,如worker添加，删除，executor添加更新等
 
 
 

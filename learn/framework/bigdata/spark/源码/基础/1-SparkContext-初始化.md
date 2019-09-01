@@ -152,8 +152,10 @@
     -   StandaloneSchedulerBackend#StandaloneAppClient#ClientEndpoint
         +   
     -   HeartbeatReceiver
-    -   CoarseGrainedScheduler
+    -   CoarseGrainedScheduler 
 
+
+    
 ##  远程通信
 ###  类图
 ![](../../images/rpc_endpoints_loops_class.jpg)

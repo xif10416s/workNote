@@ -6,7 +6,7 @@
 *   使用场景
     *   分布式系统中，远程服务相互通信如：分布式服务框架Dubbo, spark,hadoop
 
-##   基础组件 -- [测试代码](https://github.com/xif10416s/java_test/tree/master/src/main/scala/org/fxi/test/java/framework/io/netty/examples)
+##   基础组件 -- [测试代码](https://github.com/xif10416s/java_test)
 *   ChannelInboundHandlerAdapter ：  各种事件处理接口实现
     *   channelRead --  从客户端接收到消息的时候调用，处理消息
     *   channelActive  -- 连接建立完成，可以发送消息

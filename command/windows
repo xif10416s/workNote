@@ -1,5 +1,5 @@
 windows
 #  杀死指定端口的进程
 1. netstat -aon|findstr "8010"
-2. tasklist|findstr "8784"
+2. tasklist|findstr "6844"
 3. taskkill /f /t /im javaw.exe

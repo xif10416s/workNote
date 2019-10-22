@@ -68,6 +68,11 @@
 
 ## https://yq.aliyun.com/live/616
 
+## hbase tutorial
+* https://www.yiibai.com/hbase/
+* https://www.tutorialspoint.com/hbase/index.htm
+* https://www.guru99.com/hbase-tutorials.html
+* https://data-flair.training/blogs/hbase-tutorial/
 
 
 

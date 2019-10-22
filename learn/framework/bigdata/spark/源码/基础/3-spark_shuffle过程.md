@@ -36,7 +36,7 @@
 
 
 ##  RDD#groupBy操作为例子【BypassMergeSortShuffleWriter】：`val groupRdd = spark.sparkContext.parallelize(Seq(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3), 4).groupBy(f => f)`
-*   ![](../images/spark_shuffle_groupby.jpg)
+*   ![](../../images/spark_shuffle_groupby.jpg)
 *   映射成key，value的pair形式，this.map(t => (cleanF(t), t))
     -   包装成 MapPartitionsRDD
 *   隐式调用，PairRDDFunctions#groupByKey
@@ -148,6 +148,7 @@
     -   commitAndGet(): FileSegment
         +    FileSegment(val file: File, val offset: Long, val length: Long) ，文件的数据访问信息
 
+
 ### BypassMergeSortShuffleWriter#writePartitionedFile合并之前的n个文件到一个文件
 *   合并文件，Utils.copyStream(in, out, false, transferToEnabled);
     -   合并完成后删除之前的文件
@@ -181,7 +182,7 @@
 ##  SortShuffleWriter（不支持SerializedShuffle也不支持BypassMergeSortShuffle的情况）
 
 ### 图解
-![](../images/spark_shuffle_writer.jpg)
+![](../../images/spark_shuffle_writer.jpg)
 
 ### ExternalSorter
 *   排序并合并相同的key的元素

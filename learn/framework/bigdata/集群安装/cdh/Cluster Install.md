@@ -1,5 +1,5 @@
 # 集群安装
-##  cdh 安装
+##  cdh 安装 
 *   https://blog.csdn.net/u010003835/article/details/85007946
 *   CDH6.1.0离线安装部署
     -   https://blog.csdn.net/xsjzdrxsjzdr/article/details/86064094
@@ -12,7 +12,7 @@
 
 ## 6.1文档
 *   https://www.cloudera.com/documentation/enterprise/6/6.1.html
-##
+
 
 ##  centos 源
 *   https://www.cnblogs.com/focusonepoint/p/7120861.html

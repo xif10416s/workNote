@@ -1,10 +1,24 @@
-#Netty4.x 学习
-##[Netty 4.x学习笔记 - 线程模型](http://yihongwei.com/2014/01/netty-4-x-thread-model/)
-##[Netty 4.x 用户指南](http://wiki.jikexueyuan.com/project/netty-4-user-guide/writing-discard-server.html)
+#  Netty4.x 学习
+##   Netty特点
+*   设计优雅--适用于各种传输类型的统一 API 阻塞和非阻塞 Socket；基于灵活且可扩展的事件模型，可以清晰地分离关注点；高度可定制的线程模型 - 单线程，一个或多个线程池；真正的无连接数据报套接字支持
+*   高性能，高吞吐，低延迟，零拷贝
+*   支持SSL/TSL 和 StartTLS，安全协议
+*   使用场景
+    *   分布式系统中，远程服务相互通信如：分布式服务框架Dubbo, spark,hadoop
 
-#SOURCE
-##基本流程
-####Client流程
+##   基础组件 -- [测试代码](https://github.com/xif10416s/java_test)
+*   ChannelInboundHandlerAdapter ：  各种事件处理接口实现
+    *   channelRead --  从客户端接收到消息的时候调用，处理消息
+    *   channelActive  -- 连接建立完成，可以发送消息
+*   NioEventLoopGroup : 是用来处理I/O操作的多线程事件循环器，Netty 提供了许多不同的 EventLoopGroup 的实现用来处理不同的传输
+    *   第一个经常被叫做‘boss’，用来接收进来的连接。
+    *   第二个经常被叫做‘worker’，用来处理已经被接收的连接，一旦‘boss’接收到连接，就会把连接信息注册到‘worker’上。
+*   ServerBootstrap :  是一个启动 NIO 服务的辅助启动类
+*   NioServerSocketChannel:  用来实例化新的channel，接收新来的连接
+*    ChannelInitializer： 是一个特殊的处理类，他的目的是帮助使用者配置一个新的 Channel。
+
+##   基本流程
+####   Client流程
 *   1,初始化b = Bootstrap，服务辅助启动类
 *   2,初始化工作组，workGroup = NioEventLoopGroup，并设定到Bootstrap，b.group(workGruop)
     -   是用来处理I/O操作的多线程事件循环器
@@ -41,12 +55,7 @@
         +   TimeClientHandler的channelRead,读取信息消费，打印服务器发送过来的内容
 
 
-
-
-
-
-
-####channel 读写处理流程--服务端
+####    channel 读写处理流程--服务端
 *   服务端，serverSocketChannel accept客户端SocketChannel
 *   给NioServerSocketChannel的pipeline触发一个读取事件，fireChannelRead，把客户端连接传输给pipeline的handler处理链一个个处理
 *   首先进入ServerBootstrap的channelRead
@@ -62,7 +71,7 @@
     -   TimeEncoder context的write, 最终调用TimeEncoder的重写的encode方法实现编码
 *   channel将信息返回
 
-####DefaultChannelPromise 异步处理协调
+####   DefaultChannelPromise 异步处理协调
 *   应用场景
     -   1，promise添加listener,ChannelFutureListener，观察者模式
     -   2，主线程promise.sync，线程等待wait()
@@ -72,4 +81,10 @@
     -   6，主线程从promise获取连接完成的channel
 
 
-
+## 参考资料
+*   [Netty 4.x学习笔记 - 线程模型](http://yihongwei.com/2014/01/netty-4-x-thread-model/)
+*   [Netty 4.x 用户指南](http://wiki.jikexueyuan.com/project/netty-4-user-guide/writing-discard-server.html)
+*   Netty
+*   https://www.jianshu.com/p/f16698aa8be2
+*   [源码学习](https://github.com/code4craft/netty-learning)
+*   [官网](https://netty.io/wiki/user-guide-for-4.x.html)

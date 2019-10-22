@@ -24,6 +24,7 @@
 	*	docker volume rm  cdh_data1
 	*	docker volume rm  cdh_data2
 	*	docker volume create cdh_name_var,docker volume create cdh_name_etc,docker volume create cdh_name_opt
+		*	docker volume rm cdh_name_var  cdh_name_etc  cdh_name_opt
 	*	docker volume create cdh_data1
 	*	docker volume create cdh_data2
 *	创建网卡 - 固定ip
@@ -33,6 +34,7 @@
 *	拉去官网centos7.6 	
 *	docker run -it --privileged=true -p 18001:22 1e1148e4cc2c  /usr/sbin/init
 *	docker run -it  --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name_var:/var -v cdh_name_etc:/etc -v cdh_name_opt:/opt   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010   -p 28100:10000 -p 28888:8888  --add-host=slave1:172.20.100.121 --add-host=slave2:172.20.100.122  centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
+*	docker run -it  --ip 172.20.100.120 --net test01 -h="master" --name master  -d --privileged=true  -v cdh_name_var:/var -v cdh_name_etc:/etc -v cdh_name_opt:/opt   -p 28001:22 -p 28002:7180  -p 28080:8080 -p 28070:7070 -p 28081:8081 -p 28040:4040 -p 28057:50070 -p 28088:8088 -p 28010:16010 -p 28006:60010   -p 28100:10000 -p 28888:8888  --add-host=slave1:172.20.100.121 centos_cdh6.1:namenode1  /usr/sbin/init sh -c '/etc/rc.local;'
 *	yum install wget
 *	yum install vim
 *	源配置 -- https://blog.csdn.net/inslow/article/details/54177191

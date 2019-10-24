@@ -73,6 +73,7 @@
 * https://www.tutorialspoint.com/hbase/index.htm
 * https://www.guru99.com/hbase-tutorials.html
 * https://data-flair.training/blogs/hbase-tutorial/
+* https://www.slidestalk.com/home/publish/74
 
 
 

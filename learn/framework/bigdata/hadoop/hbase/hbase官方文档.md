@@ -16,3 +16,14 @@
 	*	hbase.regionserver.region.split.policy
 	*	hbase.hregion.max.filesize,
 	*	hbase.regionserver.regionSplitLimit
+*	Managed Compactions -- 默认每7天一次
+	
+### Architecture
+
+#### hbase 数据模型
+*	https://dzone.com/articles/understanding-hbase-and-bigtab
+*	bigtable
+	*	 The map is indexed by a row key, column key, and a timestamp; each value in the map is an uninterpreted array of bytes
+*	hbase 
+	*	Users store data rows in labelled tables. A data row has a sortable key and an arbitrary number of columns. The table is stored sparsely, so that rows in the same table can have crazily-varying columns, if the user likes
+	*	A table's column families are specified when the table is created, and are difficult or impossible to modify later. It can also be expensive to add new column families, so it's a good idea to specify all the ones you'll need up front.

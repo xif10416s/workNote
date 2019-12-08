@@ -153,7 +153,9 @@ Node 上的 Executor
     *   下载地址：https://github.com/steveloughran/winutils
     *   下载后的winutils.exe放到HADOOP_HOME/bin目录下
 *   用git bash以管理员身份运行build/spark-build-info 用以生成spark-version-info.properties文件
-build/spark-build-info ./core/target/extra-resources 2.4.3
+core/pom.xml  executable="bash" 元素注释掉
+build/spark-build-info ./core/target/extra-resources 2.4.4-SNAPSHOT
+cp ./core/target/extra-resources/spark-version-info.properties target/
 将生成的spark-version-info.properties文件复制到spark-core_2.11-2.4.0-SNAPSHOT.jar的根目录下。(复制之前先检查根
 目录下是否存在spark-version-info.properties，不存在再复制)
 在conf目录下复制log4j.properties.template，重命名为log4j.properties

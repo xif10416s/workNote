@@ -231,3 +231,10 @@ ip link
 =======
 
 
+liunx 4g卡信号
+https://blog.csdn.net/csdnhuaong/article/details/74387203
+
+
+python 4g at
+https://blog.csdn.net/DreamBitByBit/article/details/79144917
+sudo chmod 777 /dev/ttyUSB0

@@ -1,4 +1,6 @@
 #   Delta Lake概述.md
+*	https://www.iteblog.com/archives/2596.html
+
 ##  数据湖
 *	数据湖概念的诞生，源自企业面临的一些挑战，如数据应该以何种方式处理和存储。
 *	数据湖不但能存储传统类型数据，也能存储任意其他类型数据，并且能在它们之上做进一步的处理与分析，产生最终输出供各类程序消费。
@@ -33,6 +35,7 @@
 *	通常使用Date字段作为分区
 	*	使用基数少的字段但作为分区，userid不适合
 	*	至少一个分区1个g以上数据量
+*	Delta Lake 就是使用 DataSource V1 版本的 API 实现的一种新的数据源
 
 ##  官网 --0.3
 *	https://docs.delta.io/0.3.0/delta-update.html

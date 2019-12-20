@@ -22,13 +22,18 @@
 	*	https://blog.csdn.net/chenmaolin88/article/details/79357263
 *	图片打标记
 	*	https://blog.csdn.net/chenmaolin88/article/details/79357502
+*	pip install --upgrade pip
 *	pip install tensorflow==1.15rc2
+	*	pip install -i https://pypi.tuna.tsinghua.edu.cn/simple tensorflow-1.15.0rc2-cp37-cp37m-manylinux2010_x86_64.whl 
 *	pip install lxml
+	*	pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  lxml
 *	pip install Pillow
+	*	pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  Pillow
 *	https://github.com/tensorflow/models
 *	https://github.com/protocolbuffers/protobuf/releases/tag/v3.4.0
 *	PYATHONPATH : PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 	*	 export PYTHONPATH=$PYTHONPATH:/data/ai_kpi/tf_ai/
+	*	export PYTHONPATH=$PYTHONPATH:/data/ai_kpi/tf_lib/
 *	cd C:\Users\DELL\Documents\tensflow_test\models-master\research
 *	C:\Users\DELL\Documents\tensflow_test\protoc-3.4.0-win32\bin\protoc object_detection/protos/*.proto --python_out=.
 *	python object_detection/builders/model_builder_test.py
@@ -85,3 +90,13 @@
 *	python export_inference_graph.py   --pipeline_config_path=F:/work_dir/train_dir/iwsn/ssd_mobilenet_v1_person.config     --trained_checkpoint_prefix=F:/work_dir/train_dir/iwsn/train\model.ckpt-11328   --output_directory=F:/work_dir/train_dir/iwsn/train
 
 
+### 工控机
+*	创建新环境
+	*	conda create -n tensorflow python=3.6
+	*	conda activate tensorflow
+	*	conda info --env
+*	 pip install tensorflow-1.5.0-cp36-cp36m-manylinux1_x86_64.whl
+*	 pip install  matplotlib-3.1.0-cp36-cp36m-manylinux1_x86_64.whl
+*	 https://files.pythonhosted.org/packages/10/5c/0e94e689de2476c4c5e644a3bd223a1c1b9e2bdb7c510191750be74fa786/Pillow-6.2.1-cp36-cp36m-manylinux1_x86_64.whl
+*	AVX instructions
+	*	cat /proc/cpuinfo | grep avx

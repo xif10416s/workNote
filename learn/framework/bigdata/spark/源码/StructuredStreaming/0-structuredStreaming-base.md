@@ -13,7 +13,7 @@
     *   ![](https://spark.apache.org/docs/latest/img/structured-streaming-stream-as-a-table.png)
 
 ## 基本处理
-*   ![](https://spark.apache.org/docs/latest/img/structured-streaming-model.png）
+*   ![](https://spark.apache.org/docs/latest/img/structured-streaming-model.png)
 *   每个一定时间【1s】会触发一次数据操作，新的数据会作为行添加到input Table
 *   然后触发 input 上的查询操作生成 结果result table
 *   Output Modes ： 结果内容最终可以以不同模式被输出到外部存储
@@ -23,7 +23,7 @@
     -   Append Mode
         +   只处理新添加到result table的数据，适用于数据不会被更新的场景，只要处理增量就可以
             *   select, where, map, flatMap, filter, join
-    -   Update Mode -Available since Spark 2.1.1)
+    -   Update Mode -Available since Spark 2.1.1
         +   只有相对于上一次变化的结果会被处理
 *   Output Sinks -- 保存目的源
     -   File sink  ， 保存到目录
@@ -59,7 +59,7 @@
 *   场景及问题点：
     -   需要知道每5分钟用户的点击量
     -   之前的批处理方式的spark streaming,按照批处理数据的时间点为单位，也就是spark数据接收的时间点处理
-        +   ![](https://spark.apache.org/docs/latest/img/streaming-dstream-window.png）
+        +   ![](https://spark.apache.org/docs/latest/img/streaming-dstream-window.png)
     -   当由于网络原因，事件发生时间和数据接收时间差异比较大的时候，如：10:01分发生数据在10:08分才收到，那么按照原来spark streaming在10:01-10:05这个批处理就统计不到这条数据
     -   ![](https://spark.apache.org/docs/latest/img/structured-streaming-late-data.png)
         +   spark2.1 开始可以使用watermarking来处理数据在一定时间范围内的延后数据做聚合操作

@@ -122,3 +122,7 @@ wordCounts:[value:string,count:bigint]
 ###  StateStoreRestoreExec //TODO
 
 ###  StateStoreSaveExec 
+####   StateStore 
+*   带版本的键值存储接口
+*   HDFSBackedStateStore 实现类
+    *   每次提交生成增量文件，保存到hdfs,并新生成版本号   

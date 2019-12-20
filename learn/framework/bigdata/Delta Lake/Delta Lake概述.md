@@ -1,5 +1,6 @@
 #   Delta Lake概述.md
 *	https://www.iteblog.com/archives/2596.html
+*	 Parquet文件 + Meta 文件 + 一组操作的API = Delta Lake.
 
 ##  数据湖
 *	数据湖概念的诞生，源自企业面临的一些挑战，如数据应该以何种方式处理和存储。

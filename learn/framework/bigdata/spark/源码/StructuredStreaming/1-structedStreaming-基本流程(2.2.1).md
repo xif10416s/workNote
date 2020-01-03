@@ -10,6 +10,7 @@
       .option("port", port)
       .load() 
 ```
+
 ####   加载数据流为 DataFrame， DataStreamReader#load
 *   与普通DataFrame初始化相似，只是使用StreamingRelation
 *   新建DataSource，根据format和option初始化对应的StreamSourceProvider

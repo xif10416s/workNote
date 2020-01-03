@@ -25,6 +25,15 @@
 				*	数据质量问题是一个主观意愿，不同分析需求对于数据需求不一样（按日组织，按月组织）
 *	生命周期
 	*   https://blog.csdn.net/xinshucredit/article/details/88641697
+*	特点：
+	*	ACID事务支持，流处理，schema 增强， 多版本追踪，数据快照
+
+##	delta架构 = structed streaming  +  delta lake
+*	当数据写入的同时可以读取一致的数据
+*	增量读取一个大表时可以高吞吐量
+*	当写入出错时可以回滚
+*	可以处理历史版本的数据
+*	可以处理延迟到达的数据
 
 ##  概念
 *	Delta Lake是一个可靠存储层

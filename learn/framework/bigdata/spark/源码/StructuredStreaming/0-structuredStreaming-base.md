@@ -67,8 +67,13 @@
 *   Structured Streaming可以按照事件发生时间Event-time为窗口处理，相当于在一个表里面统计发生时间这列的数据
 *   对于超时特别久的数据可以做特殊处理
 *   withWatermark支持延迟数据处理
+    *   如果开发人员需要开发基于事件时间的有状态的流计算，则必须使用watermark机制
     -   Append mode
         +   会保持中间状态，直到超过watermark之后，把最终结果写入Result Table，删除中间状态，所以结果出来有个延迟时间
+        +   指定withWatermark使用的字段，聚合操作groupby时需要使用相同字段
+            +   df.withWatermark("time", "1 min").groupBy("time2").count() is invalid in Append output mode
+        +   先设定在做其他操作
+            +   df.groupBy("time").count().withWatermark("time", "1 min") is invalid in Append output mode
     -   Update mode
         +   每次处理都写入Result Table，在watermark之内的数据会更新旧的数据，在watermark之外的数据丢弃
     -   Complete mode

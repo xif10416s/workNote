@@ -5,8 +5,10 @@
 ##  启动
 *   解压
 *   ./elasticsearch
+  -   sysctl -w vm.max_map_count=262144 
 *   ./kibana
     -   http://localhost:5601/app/kibana#/home?_g=()
+    -  fuser -n tcp 5601
 
 ##  插件
 *   es -sql -- https://github.com/NLPchina/elasticsearch-sql

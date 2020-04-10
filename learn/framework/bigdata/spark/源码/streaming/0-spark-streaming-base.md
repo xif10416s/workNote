@@ -153,7 +153,7 @@ SocketInputDStream
                 -   "key.deserializer" ->  key序列化方式,
                 -   "value.deserializer" -> value序列化方式
                 -   "group.id" ->  consumer group 
-                -   "auto.offset.reset" -> 当没有初始offset，或者无法获取offset时，如何初始化offset策略
+                -   "auto.offset.reset" -> 当没有初始offset，或者无法获取offset时，如何初始化offset策略 (大的前提是没有初始offset的情况，有offset的情况不论设置什么都从offset读取)
                     +   earliest ，reset the offset to the earliest offset 
                     +   latest，reset the offset to the latest offset
                 -   "enable.auto.commit" -> 是否自动commit offset,默认true
@@ -247,8 +247,9 @@ SocketInputDStream
             *   earliest：起始位置
 *   exactly-once 语义（程序维护offset,保存和读取）：
     -    https://spark.apache.org/docs/latest/streaming-kafka-0-10-integration.html
+    -   kafka的delivery 语义（只一次，最多一次，最少一次）取决于 how 与 when 存储offets,通过自己管理offsets实现
     -    Checkpoints 方式：ssc.checkpoint(checkpointDirectory)
-        +    只修要打开checkpoint,offsets会被保存在checkpoint
+        +    只要打开checkpoint,offsets会被保存在checkpoint
         +    要求程序的输出操作是幂等的，可以重复操作
         +    程序代码被修改后无法从checkpoint恢复 //TODO
     -   Kafka提交方式:
@@ -259,7 +260,7 @@ SocketInputDStream
             *   val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
             *   stream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
         -   还是需要输出操作幂等，代码修改无影响
-    -   自己实现存储offset方式：
+    -   自己实现存储offset方式： demo (https://github.com/xif10416s/spark_learn/tree/version/2.4.2/src/main/scala/org/fxi/test/spark/stream/batch/kafka/DirectKafkaExactOnceWordCount.scala)
         +   第一步从自定义存储(mysql,zookeeper)中获取offset
             *   `val fromOffsets = selectOffsetsFromYourDatabase.map { resultSet =>
   new TopicPartition(resultSet.string("topic"), resultSet.int("partition")) -> resultSet.long("offset")

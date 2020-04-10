@@ -1,7 +1,59 @@
-1.memory
-jstat -gcutil pid 300 10
-jmap -heap pid
-jmap -histo
+##  memory
+###	JVM的统计监测工具:jstat
+*	类加载统计
+	*	jstat -class pid
+*	编译统计
+	*	jstat -compiler pid
+*	垃圾回收统计
+	*	jstat -gc pid
+			S0C：第一个幸存区的大小
+				S1C：第二个幸存区的大小
+				S0U：第一个幸存区的使用大小
+				S1U：第二个幸存区的使用大小
+				EC：伊甸园区的大小
+				EU：伊甸园区的使用大小
+				OC：老年代大小
+				OU：老年代使用大小
+				MC：方法区大小
+				MU：方法区使用大小
+				CCSC:压缩类空间大小
+				CCSU:压缩类空间使用大小
+				YGC：年轻代垃圾回收次数
+				YGCT：年轻代垃圾回收消耗时间
+				FGC：老年代垃圾回收次数
+				FGCT：老年代垃圾回收消耗时间
+				GCT：垃圾回收消耗总时间
+*	堆内存统计
+	*	jstat -gccapacity pid
+*	新生代垃圾回收统计:  jstat -gcnew 19570
+*	新生代内存统计: jstat -gcnewcapacity 19570
+*	老年代垃圾回收统计: jstat -gcold 19570
+*	JDK8 下 元数据空间统计: jstat -gcmetacapacity 7172
+*	总结垃圾回收统计: jstat -gcutil 19570
+
+###  输出所有内存中对象的工具：jmap
+*	-dump:[live,]format=b,file=<filename> 使用hprof二进制形式,输出jvm的heap内容到文件=.  live子选项是可选的，假如指定live选项,那么只输出活的对象到文件. 
+	*	jmap -dump:live,format=b,file=myjmapfile.txt 19570
+*	-finalizerinfo 打印正等候回收的对象的信息
+*	 -heap 打印heap的概要信息，GC使用的算法，heap（堆）的配置及JVM堆内存的使用情况
+	*	jmap -heap 19570
+*	-histo[:live] -histo[:live] 打印每个class的实例数目,内存占用,类全名信息. VM的内部类名字开头会加上前缀”*”. 如果live子参数加上后,只统计活的对象数量. 
+	*	jmap -histo:live 19570
+
+
+###	导出堆、查看Java进程、导出线程信息、执行GC、还可以进行采样分析：jcmd  -- jdk 1.7
+*	查看性能统计：jcmd pid PerfCounter.print
+*	列出当前运行的 java 进程可以执行的操作： jcmd pid help
+*	查看 JVM 的启动时长： jcmd PID VM.uptime
+*	查看系统中类统计信息（和jmap -histo pid的效果是一样的）：jcmd PID GC.class_histogram
+*	查看线程堆栈信息： jcmd PID Thread.print
+*	查看 JVM 的Heap Dump（跟 jmap命令：jmap -dump:format=b,file=heapdump.phrof pid 效果一样） ： jcmd PID GC.heap_dump FILE_NAME
+*	查看 JVM 的属性信息 ： jcmd PID VM.system_properties
+*	查看 JVM 的启动参数： jcmd PID VM.flags
+*	查看 JVM 的启动命令行： jcmd PID VM.command_line
+*	 对 JVM 执行 java.lang.System.runFinalization()： jcmd PID GC.run_finalization
+*	对 JVM 执行 java.lang.System.gc()： jcmd PID GC.run
+*	查看目标jvm进程的版本信息：jcmd PID VM.version
 
 2.JConsole
 加jvm 启动参数即可： 

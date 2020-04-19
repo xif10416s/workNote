@@ -25,7 +25,7 @@
 		*	reservedMemory 默认 300m ， 所以 usableMemory = systemMemory - 300m
 	*	相关配置
 		*	spark.memory.fraction *  usableMemory -- 决定了 (execution  + storage) 的内存
-			*	userMemory * (1- spark.memory.fraction) 
+			*	usableMemory * (1- spark.memory.fraction)  = userMemory
 		*	spark.memory.storageFraction 为 spark.memory.fraction *  usableMemory 比例中 storage 内存占比
 			*	1 -  spark.memory.storageFraction 为 execution 内存占比
 		*	案例
@@ -36,8 +36,52 @@
 			*	storeage = 9940 * 0.6 * 0.7 =8150m
 	*	spark.memory.offHeap.size  -- 堆外内存大小
 
-
-
+### UnifiedMemoryManager
+*	内存管理
+	*	execution memory refers to that used for computation in shuffles, joins,sorts and aggregations,
+ 	*   while storage memory refers to that used for caching and propagating internal data across the cluster
+*	MemoryManager --  UnifiedMemoryManager 继承自MemoryManager 
+	*	MemoryManager 构造是需要指定onHeapStorageMemory 与 onHeapExecutionMemory 用户设定storage 内存 和 executoion内存大小，单位是long
+	*	MemoryManager 主要有4个成员变量：
+		*	onHeapStorageMemoryPool = new StorageMemoryPool
+			*	堆内存储内存池，用于堆内内存分配和管理，初始化的时候会设定对于的存储内存大小
+		*	offHeapStorageMemoryPool = new StorageMemoryPool
+		*	onHeapExecutionMemoryPool = new ExecutionMemoryPool
+			*	堆内运行内存池，用于共享合适的内存给task使用，初始化的时候设定执行内存大小
+		*	offHeapExecutionMemoryPool = new ExecutionMemoryPool	
+*	MemoryPool -- 内存池，管理内存的使用，有2个实现类：
+	*	StorageMemoryPool -- 管理和分配给定大小的内存给缓存用
+		*	acquireMemory(blockId: BlockId, numBytes: Long): Boolean -- 获取内存
+			*	通过初始化给定的总内存poolSize 与 已经使用的内存 memoryUsed 计算 剩余可用的内存大小，与给定的blockid需要的内存numBytes比较：
+				*	如果剩余内存够用，则返回true
+				*	如果剩余内存比需要的少，则需要通过MemoryStore从现有的使用中移除evict一部分，释放内存
+			*	结论：
+				*	StorageMemoryPool 主要是记录实际使用了多少，能否分配给新的缓存对象，以及结合MemoryStore触发释放缓存操作以扩充可用内存
+				*	实际的存储和释放都是MemoryStore操作
+	*	ExecutionMemoryPool -- 分配合适的内存给每个task
+		*	memoryForTask = new mutable.HashMap[Long, Long]() 记录每个task用的内存量
+		*	memoryUsed =  memoryForTask.values.sum 所有任务使用的总和
+		*	`acquireMemory(
+      numBytes: Long,
+      taskAttemptId: Long,
+      maybeGrowPool: Long => Unit = (additionalSpaceNeeded: Long) => Unit,
+      computeMaxPoolSize: () => Long = () => poolSize): Long  `
+      		*	某个task taskAttemptId 需要的内存量
+      		*	maybeGrowPool ： 回掉函数，当内存不够时扩展所需的内存
+      		*	computeMaxPoolSize ： 获取当前执行内存的最大值，这个值会发生变化，如通过回收storage的内存扩充
+      		*	用于管理任务所共享的内存
+*	UnifiedMemoryManager  -- 作为 storeage 与 execution 内存管理的 统筹 入口
+	*	acquireStorageMemory -- 是否可获取存储内存
+		*	如果storage内存不够了，但是execution够用，会从execution内存借用，动态调整storage，execution 内存上限 ， 然后获取storeag内存
+			*	executionPool.decrementPoolSize(memoryBorrowedFromExecution)
+			*	storagePool.incrementPoolSize(memoryBorrowedFromExecution)
+			*	storagePool.acquireMemory(blockId, numBytes)
+	*	acquireExecutionMemory -- 获取运行内存大小
+		*	这个方法当没有足够内存时会阻塞直到有内存为止
+		*	如果execution内存不够，会清除storeage中存储对象，是否内存，用来扩充execution的上限
+*	MemoryStore -- 存储block 
+	*	一组序列化的java对象 或者  序列化的ByteBuffers
+	*	TODO
 
 ##  spark cache and load block size 
 

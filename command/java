@@ -54,6 +54,45 @@
 *	 对 JVM 执行 java.lang.System.runFinalization()： jcmd PID GC.run_finalization
 *	对 JVM 执行 java.lang.System.gc()： jcmd PID GC.run
 *	查看目标jvm进程的版本信息：jcmd PID VM.version
+*	-XX:NativeMemoryTracking=detailJVM参数重启项目，查看到的内存分布：jcmd pid VM.native_memory detail
+
+###	pmap查看内存分布,linux命令
+*	pmap -x 5256 | sort -k 3 -n -r
+
+### 使用系统层面的工具定位堆外内存：gperftools -- TODO
+
+### 使用strace追踪系统调用  -- https://www.cnblogs.com/machangwei-8/p/10388883.html
+*	拦截并记录指定进程的系统调用以及进程接收到的信号
+	*	可以对特定的系统调用或者几组系统调用进行过滤
+	*	可以通过统计特定系统调用的调用次数、耗费的时间、成功和失败的次数来配置(profile)系统调用的使用I
+	*	跟踪发送给进程的信号量
+	*	可以通过pid附着(attach)到任何运行的进程
+*	Linux内核目前有300多个系统调用，详细的列表可以通过syscalls手册页查看。这些系统调用主要分为几类：
+	*	文件和设备访问类 比如open/close/read/write/chmod等
+	*	进程管理类 fork/clone/execve/exit/getpid等
+	*	信号类 signal/sigaction/kill 等
+	*	内存管理 brk/mmap/mlock等
+	*	进程间通信IPC shmget/semget * 信号量，共享内存，消息队列等
+	*	网络通信 socket/connect/sendto/sendmsg 等
+*	strace常用选项：
+	*	-tt 在每行输出的前面，显示毫秒级别的时间
+	*	-T 显示每次系统调用所花费的时间
+	*	-v 对于某些相关调用，把完整的环境变量，文件stat结构等打出来。
+	*	-f 跟踪目标进程，以及目标进程创建的所有子进程
+	*	-e 控制要跟踪的事件和跟踪行为,比如指定要跟踪的系统调用名称
+		*	-e trace=file     跟踪和文件访问相关的调用(参数中有文件名)
+		*	-e trace=process  和进程管理相关的调用，比如fork/exec/exit_group
+		*	-e trace=network  和网络通信相关的调用，比如socket/sendto/connect
+		*	-e trace=signal    信号发送和处理相关，比如kill/sigaction
+		*	-e trace=desc  和文件描述符相关，比如write/read/select/epoll等
+		*	-e trace=ipc 进程见同学相关，比如shmget等
+	*	-o 把strace的输出单独写到指定的文件
+	*	-s 当系统调用的某个参数是字符串时，最多输出指定长度的内容，默认是32个字节
+	*	-p 指定要跟踪的进程pid, 要同时跟踪多个pid, 重复多次-p选项即可。	
+
+
+##  分析案例
+*	https://mp.weixin.qq.com/s?__biz=MzAxNjk4ODE4OQ==&mid=2247488628&idx=1&sn=bc0699a686b3a3fb0af14d080fd58676&chksm=9bed3506ac9abc10a8c8861b914ddb8536a0ec2a2f5f22d10fc0f0d4fd2a4e142f69f5f8fe45&scene=126&sessionid=1586478457&key=6a160edf960d296fdfecee8a6b0c049fd061d62b165487bbcb1dfc15593b96c1d8c689aab4d277e98632383cb1f86edecd9369e351d3338c05601234bdcb9aaff7ab6de0a2f6f963a9bde0f7f187303a&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10&version=62080079&lang=zh_CN&exportkey=ASmTKUD8tLB1FJDv%2F4VAXF8%3D&pass_ticket=d%2FlMyUrC7U17%2FFfLNlR9vWU89AJCyB%2BzxXh4d4B01erpipL53JR%2B9L5pVQzsbbHh
 
 2.JConsole
 加jvm 启动参数即可： 

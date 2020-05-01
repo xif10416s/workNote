@@ -238,3 +238,12 @@ https://blog.csdn.net/csdnhuaong/article/details/74387203
 python 4g at
 https://blog.csdn.net/DreamBitByBit/article/details/79144917
 sudo chmod 777 /dev/ttyUSB0
+
+
+## buffer/cache查看
+*	https://github.com/silenceshell/hcache
+	*	echo 3 > /proc/sys/vm/drop_caches
+
+
+## 多窗口管理tmux
+*	https://www.cnblogs.com/liuguanglin/p/9290345.html

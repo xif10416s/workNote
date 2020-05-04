@@ -23,7 +23,7 @@
     +   spark ml  --TODO
         +   [0-spark-ml-base-algorithm.md](learn/framework/bigdata/spark/源码/ml/0-spark-ml-base-algorithm.md)
     +   features
-        +   [Spark SQL 自适应执行优化引擎 ](learn/framework/bigdata/spark/源码/features/Spark SQL 自适应执行优化引擎.md)
+        +   [Spark SQL 自适应执行优化引擎 ](learn/framework/bigdata/spark/源码/features/SparkSQL自适应执行优化引擎.md)
     +   basic module
         +   [通讯模块概要](learn/framework/bigdata/spark/源码/基础/通讯模块/spark通讯模块.md)
         +   内存管理 -- TODO
@@ -45,7 +45,7 @@
 
 #####  数据湖
 ######  delta lake --TODO
-*   [delta lake概述](learn/framework/bigdata/Delta Lake/Delta Lake.md)
+*   [delta lake概述](learn/framework/bigdata/DeltaLake/Delta Lake.md)
 
 #####   cdh 6.X 集群安装
 *   [docker测试环境安装](learn/framework/bigdata/集群安装/cdh/Cluster Install.md)

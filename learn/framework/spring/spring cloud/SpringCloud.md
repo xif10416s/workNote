@@ -36,6 +36,35 @@
 ### zuul -- 网关
 *   http://dockone.io/article/482
 *   https://www.cnblogs.com/ityouknow/p/6944096.html
+*   基本功能
+    *   单点入口
+    *   路由转发
+    *   限流熔断
+    *   日志监控
+    *   安全认证
+*   可动态发布过滤器机制
+*   支持红绿部署（新旧版本）
+*   转发到开发者测试分支
+*   功能模块
+    *   过滤器发布管理模块
+    *   过滤器加载模块
+    *   网关运行时过滤模块
+*   过滤器概念
+    *   过滤器类型 --type--
+        *   pre routing filter 前置过滤器 -- 发送给资源服务器处理之前 -- request
+            *   认证，选路由，请求日志
+        *   routing filter 路由过滤器
+            *   将请求发送到资源服务器
+        *   post routing filter 后置过滤器 -- 资源服务器处理结果响应处理 -- response
+            *   对响应头增强http头
+            *   收集统计和度量
+            *   将响应以流的方式发送回客户
+        *   error 
+    *   过滤器执行顺序 --execution order
+    *   过滤器执行的条件 -- criteria
+    *   过滤器执行的动作  -- action
+
+### kong 网关
 
 ### config server
 *   https://www.jianshu.com/p/b43f41cdcbe2

@@ -31,14 +31,14 @@
 *	JDK8 下 元数据空间统计: jstat -gcmetacapacity 7172
 *	总结垃圾回收统计: jstat -gcutil 19570
 
-###  输出所有内存中对象的工具：jmap
+###  输出所有内存中对象的工具：jmap 
 *	-dump:[live,]format=b,file=<filename> 使用hprof二进制形式,输出jvm的heap内容到文件=.  live子选项是可选的，假如指定live选项,那么只输出活的对象到文件. 
 	*	jmap -dump:live,format=b,file=myjmapfile.txt 19570
 *	-finalizerinfo 打印正等候回收的对象的信息
 *	 -heap 打印heap的概要信息，GC使用的算法，heap（堆）的配置及JVM堆内存的使用情况
 	*	jmap -heap 19570
-*	-histo[:live] -histo[:live] 打印每个class的实例数目,内存占用,类全名信息. VM的内部类名字开头会加上前缀”*”. 如果live子参数加上后,只统计活的对象数量. 
-	*	jmap -histo:live 19570
+*	-histo[:live] -histo[:live] 打印每个class的实例数目,内存占用,类全名信息. VM的内部类名字开头会加上前缀”*”. 如果live子参数加上后,只统计活的对象数量.       
+	*	jmap -histo:live 19570         -- 线上不能用，回stw
 
 
 ###	导出堆、查看Java进程、导出线程信息、执行GC、还可以进行采样分析：jcmd  -- jdk 1.7

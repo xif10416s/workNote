@@ -10,6 +10,7 @@
         -   本地模式为 local[*]
         -   集群模式为 master地址，如：spark://192.168.0.147:7077
 *   初始化或者从缓存获取SparkContext ：
+    
     -   SparkContext##getOrCreate(config: SparkConf)
 *   程序入口点
     -   new SparkContext(config)  <== v 2.0.0以前
@@ -22,6 +23,7 @@
             *   存储/读取Hive表
 *   重要组件初始化并启动
     -   SparkUI
+        
         +   客户端webui,默认端口4040
     -   schedulerBackend [后台线程]:管理系统，与master,worker通信，决定如何获取资源，配合TaskSchedulerImpl运行task
         +   具体实现类：
@@ -66,6 +68,7 @@
         +   MapMaker:
             *   Google Collections中的MapMaker融合了Weak Reference，线程安全，高并发性能，异步超时清理，自定义构建元素等强大功能于一身。
     -   DAGScheduler ： DAG计算
+        
         +   为每一个job计算DAG图，把划分的stage作为taskset的形式提交给TaskScheduler执行task
     -   SparkEnv ：给spark实例(master,worker）保存运行时环境变量，是全局变量，所有线程都可以访问相同的sparkEnv
         +   SecurityManager ： 负责全局安全权限控制
@@ -155,7 +158,7 @@
     -   CoarseGrainedScheduler 
 
 
-    
+​    
 ##  远程通信
 ###  类图
 ![](../../images/rpc_endpoints_loops_class.jpg)

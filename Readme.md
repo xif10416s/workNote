@@ -1,6 +1,5 @@
 #   学习笔记
-##  框架学习
-### 大数据
+#### 大数据学习
 *   Apache Spark
     -   [spark概述.md](learn/framework/bigdata/spark/spark概述.md)
     -   spark 源码
@@ -27,6 +26,14 @@
         +   databricks
             *   blogs
                 -   [Project Tungsten- Bringing Apache Spark Closer to Bare Metal](learn/framework/bigdata/spark/官网/databricks/blogs/Project_Tungsten_Bringing_Apache_Spark_Closer_to_Bare_Metal.md)
+
+
+
+####  缓存
+
+* redis
+  * [redis安装](learn\framework\cache\redis\redis_install.md)
+  * [redis笔记](learn\framework\cache\redis\redis.md)
 
 
 

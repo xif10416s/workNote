@@ -3,3 +3,20 @@ windows
 1. netstat -aon|findstr "8010"
 2. tasklist|findstr "6844"
 3. taskkill /f /t /im javaw.exe
+
+端口映射
+1. 添加映射
+	netsh  interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=80 connectaddress=10.0.40.100 connectport=80
+	netsh  interface portproxy add v4tov4 listenaddress=172.20.100.111 listenport=7000 connectaddress=192.168.99.100 connectport=27000
+	netsh  interface portproxy add v4tov4 listenaddress=172.20.100.111 listenport=7001 connectaddress=192.168.99.100 connectport=27001
+	netsh  interface portproxy add v4tov4 listenaddress=172.20.100.111 listenport=7002 connectaddress=192.168.99.100 connectport=27002
+#listenaddress 要监听的ip地址，也就是最终要访问的ip地址。
+
+#connectadress 要链接的服务器地址，也就是RealServer
+
+#port就不用解释了，就是端口。
+2. 删除映射
+	netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=80
+
+3.  查看
+	netsh interface portproxy show all	

@@ -8,6 +8,7 @@
     -    连接支持非阻塞IO的读/写的通道
 *   Buffers
     -   Channels通道直接用来进行读/写操作的类数组对象
+    -   分配对外内，外设读取加速
 *   Selectors 
     -   能知道哪些Channels通道集合存在IO事件
 *   SelectionKeys

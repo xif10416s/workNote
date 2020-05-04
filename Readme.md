@@ -45,10 +45,10 @@
 
 #####  数据湖
 ######  delta lake --TODO
-*   [delta lake概述](learn/framework/bigdata/DeltaLake/Delta Lake.md)
+*   [delta lake概述](learn/framework/bigdata/DeltaLake/DeltaLake.md)
 
 #####   cdh 6.X 集群安装
-*   [docker测试环境安装](learn/framework/bigdata/集群安装/cdh/Cluster Install.md)
+*   [docker测试环境安装](learn/framework/bigdata/集群安装/cdh/ClusterInstall.md)
 *   [阿里云服务器安装]
 
 

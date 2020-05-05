@@ -14,6 +14,21 @@
 5. 导入idea打开
 6. 把client generated/generated-test拷贝到对于client包下，移除src   <== TODO 不专业
 
+
+
+###### 二，kafka服务器启动
+
+1. windows环境测试需要下载编译好的kafka_2.11-2.4.1.tgz
+   1. 通过：bin/zookeeper-server-start.sh config/zookeeper.properties启动zookeeper
+2. kafka服务启动
+   1. 主类：kafka.Kafka
+   2. 程序参数： config/server.properties
+3. 通过windows的bat命令测试
+   1. kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic test2
+   2.  查看zookeeper信息：bin/zookeeper-shell.sh localhost:2181
+
+
+
 ​    
 
 
@@ -30,3 +45,7 @@
 * 执行.gradlew   报错  找不到 org.gradle.wrapper.GradleWrapperMain
   * 在根目录执行gradle wrapper
   * https://juejin.im/post/5c9395bcf265da612c3a3def
+* kafka程序启动，SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+  * core.iml修改slf4j的scope，直接删除
+* log4j:WARN No appenders could be found for logger (kafka.utils.Log4jControllerRegistration$).
+  * 从config中拷贝log4j.properties  到 ，core/src/scala中

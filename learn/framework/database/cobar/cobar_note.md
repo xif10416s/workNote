@@ -1,18 +1,21 @@
-#Cobar 学习--Cobar是提供分布式数据库服务的中间件
+#	Cobar 学习--Cobar是提供分布式数据库服务的中间件
+
 *   Client -> Cobar -> mysql
 
-##基本功能结构内容
+##  基本功能结构内容
 ![](images/1.png)
 
-##优点
+##   优点
+
 *   数据和访问从集中式改变为分布式
 *   提供数据节点的failover。
 *   解决连接数过大的问题。
 *   对业务代码侵入性少。
 *   MySQL采用异步的复制机制,因此多份replica间 的读写分离会造成一定程度的数据不一致,因此 没有被Cobar采用。
 
-##源码
-###Cobar启动流程 ==>CobarServer#startup()
+##   源码
+###    Cobar启动流程 ==>CobarServer#startup()
+
 *   1 . 初始化主要组件
     -   1.1  初始化配置信息CobarConfig
     -   1.2  initExecutor，线程池，
@@ -44,9 +47,9 @@
     -   2.7 初始化sql服务连接工厂，提供sql服务连接
     -   2.8 启动一个线程：NIOAcceptor，启动sql服务，提供sql操作
 
+###    实例
+####    client连接8066，发送查询语句"select * from tb1"
 
-###实例
-####client连接8066，发送查询语句"select * from tb1"
 *   1 cmd 连接数据库，`mysql -h127.0.0.1 -utest -p -P8066` 
     -   server监听线程监听连接事件，NIOAcceptor#accept
     *   从ServerSocketChannel获取SocketChannel,`channel = serverChannel.accept();`
@@ -78,30 +81,31 @@
             *   接收和处理返回数据，
             *   通过客户端连接返回结果数据`bin.write(buffer, source)`
 
-####流程图
+####    流程图
 ![](images/2.png)
 
 
 
 
 
-####功能点
-#####cobar 分表查询处理 --> 分节点查询 + 结果合并
+####   功能点
+#####    cobar 分表查询处理 --> 分节点查询 + 结果合并
+
 *   1 . 路由计算,根据sql,和schema中定义，找到对应的dataNode，如果分表，where in 语句，根据id和路由规则，重新生成in 语句
 *   2 . 在各个节点执行查询，返回内容存放在同一个 ByteBuffer中`buffer = bin.write(buffer, source);`
 *   3 . 读取并处理数据完成后，unfinishedNodeCount 同步减去1，直到所有节点处理完成，unfinishedNodeCount == 0 ，通过ServerConnection将buffer数据写入，最终返回客户端`source.write(bin.write(buffer, source));`
 
 
 
-
-#####cobar 事物
+#####   cobar 事物
 ![](images/3.png)
 
 *   客户端的同一个连接ServerConnection,sql操作使用的所有节点对应的表，统一异步提交或者统一异步回滚
 
 
 
-#####Cobar 各连接管理，空闲，断开
+#####   Cobar 各连接管理，空闲，断开
+
 *   结构
 ![](images/4.png)
 *   常见异常
@@ -126,9 +130,9 @@ wait_timeout = 1800 // 30分钟
 
 ```
 
+###   主要组件
+######    CobarConfig
 
-###主要组件
-######CobarConfig
 *   cobar配置信息，所有成员都有两份，支持配置修改后reload和恢复
 *   默认配置信息+server.xml+schema.xml+rule.xml解析后的内容
 *   成员：
@@ -142,8 +146,8 @@ wait_timeout = 1800 // 30分钟
         +   主从机器心跳检测配置
         +   数据源连接信息
 
+######   NIOReactor --网络事件反应器
 
-######NIOReactor --网络事件反应器
 *   reactor 模式
 *   R reactorR -- 读响应器，接受并监控读取就绪事件，通知注册的hander(NIOConnection)处理读取和写入事件，如：客户端建立一个连接，发送sql执行请求，
     -   成员
@@ -157,7 +161,8 @@ wait_timeout = 1800 // 30分钟
             *   循环监听事件
 *   W reactorW
 
-######NIOConnection
+######    NIOConnection
+
 *   连接处理的相关操作，客户端与cobar的连接，cobar与mysql server的连接
 *   方法
     -   register(Selector selector) ，注册网络事件
@@ -167,7 +172,8 @@ wait_timeout = 1800 // 30分钟
     -     writeByQueue() ，基于处理器队列的方式写数据
     -     writeByEvent()， 基于监听事件的方式写数据
 
-######AbstractConnection implements NIOConnection
+######    AbstractConnection implements NIOConnection
+
 *   基本读写方法实现
 *   子类
     -   FrontendConnection
@@ -216,7 +222,9 @@ wait_timeout = 1800 // 30分钟
             -   MySQLConnection extends BackendConnection
                 +   同步
         
-######NIOProcessor
+
+######    NIOProcessor
+
 *   逻辑处理容器，一组资源
 *   主要成员
     -   NIOReactor reactor，接受I/O请求，回调NioConnection处理
@@ -227,12 +235,13 @@ wait_timeout = 1800 // 30分钟
     -   ConcurrentMap<Long, FrontendConnection> frontends，一组和客户端的连接
     -   ConcurrentMap<Long, BackendConnection> backends;
 
-######FrontendAuthenticator implements NIOHandler
+######   FrontendAuthenticator implements NIOHandler
+
 *   前端认证处理器
 *   检查用户是否有权限访问schema,cobar的schema
 
+######   ServerRouter
 
-######ServerRouter
 *   路由计算，如何分库分表，需要在哪些数据节点上计算
 *   路由算法 </br> `RouteResultset route(SchemaConfig schema, String stmt, String charset, Object info)`
     -   检查是否含有cobar hint
@@ -246,7 +255,8 @@ wait_timeout = 1800 // 30分钟
     -   规则计算
     -   判断路由结果是单库还是多库
 
-######BlockingSession
+######    BlockingSession
+
 *   主要成员
     -   ConcurrentHashMap<RouteResultsetNode, Channel> target;需要使用的节点集合
     -   SingleNodeExecutor singleNodeExecutor;单节点数据执行器
@@ -261,28 +271,29 @@ wait_timeout = 1800 // 30分钟
 
 
 
-######MySQLChannel implements Channel
+######   MySQLChannel implements Channel
+
 *   与mysql 服务连接对象
 *   持有与mysql服务通信的socket 和输入输出流
 *   BinaryPacket execute(RouteResultsetNode rrn, ServerConnection sc, boolean autocommit)
     -   socket通信，发送sql语句执行并返回结果
 
+######   NIOConnector extends Thread 
 
-######NIOConnector extends Thread 
 *   后端线程的启动和检测
 *   持有后端线程队列，connectQueue：BlockingQueue<BackendConnection> 以及 processors：NIOProcessor[]处理器列表
 *   run()
     -   connect(selector);连接后端线程
     -   监听连接成功事件，回调processor.postRegister(c);
 
+######    MySQLDataSource
 
-######MySQLDataSource
 *   mysql数据源对象
 *   与mysql定期发送心跳检测
 *   数据源连接池功能，缓存连接
 
+######   ManagerQueryHandler
 
-######ManagerQueryHandler
 *   cobar管理操作处理
 *   监控命令
     -   数据源、数据节点查看
@@ -296,7 +307,7 @@ wait_timeout = 1800 // 30分钟
     -   节点切换
     -   连接断开
 
-######NIOAcceptor extends Thread
+######   NIOAcceptor extends Thread
 *   监听管理端口，处理
 *   成员
     -   Selector selector，监听网络事件

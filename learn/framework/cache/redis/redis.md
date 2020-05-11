@@ -149,7 +149,7 @@
   | REDIS_ENCODING_LINKEDLIST | 双向链表                  | List                   |
   | REDIS_ENCODING_ZIPLIST    | 压缩列表                  | List,HASH(数量小),ZSET |
   | REDIS_ENCODING_INTSET     | 整数集合                  | SET                    |
-  | REDIS_ENCODING_SKIPLIST   | 调表和字典                | ZSET                   |
+  | REDIS_ENCODING_SKIPLIST   | 跳表和字典                | ZSET                   |
   |                           |                           |                        |
 
 #### 内存回收和内存共享
@@ -162,6 +162,12 @@
   * 内存共享 **refcount属性除了能实现内存回收以外，还能实现内存共享**
     * 将数据块的键的值指针指向一个现有值的对象
     * 将被共享的值对象引用refcount加1 Redis的共享对象目前只支持整数值的字符串对象。之所以如此，实际上是对内存和CPU（时间）的平衡：共享对象虽然会降低内存消耗，但是判断两个对象是否相等却需要消耗额外的时间。对于整数值，判断操作复杂度为o(1),对于普通字符串，判断复杂度为o(n);而对于哈希，列表，集合和有序集合，判断的复杂度为o(n^2).虽然共享的对象只能是整数值的字符串对象，但是5种类型都可能使用共享对象。
+
+
+
+#### redis I/O模型 -- TODO
+
+
 
 #### redis 客户端
 

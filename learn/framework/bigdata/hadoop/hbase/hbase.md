@@ -3,6 +3,28 @@
 *   /home/hadoop/hbase/bin/hbase-daemon.sh start thrift
 *   -Dhbase.log.dir=/data/hbase/logs
 
+
+
+#### 常见的数据输出模型
+
+- Key-Value快速输出型，最简单的kv查询，并发量可能很高，速度要求快。比如风控。
+
+- Key-Map快速输出型，定向输出，比如常见的通过文章id获取文章详情数据，kv查询升级版。
+
+- MultiKey-Map批量输出型，比如常见的推荐Feed流展示，Key-Map查询升级版。
+
+- C-List多维查询输出型，指定多个条件进行数据过滤，条件可能很灵活，分页输出满足条件的数据。这应该是非常常见的，比如筛选指定标签或打分的商品进行推荐、获取指定用户过去某段时间买过的商品等等。
+
+- G-Top统计排行输出型，根据某些维度分组，展示排行。如获取某论坛热度最高Top10帖子。
+
+- G-Count统计分析输出型，数仓统计分析型需求。
+
+- Multi-Table混合输出型，且不同表查询条件不同，如列表页混排输出内容。
+
+- Term分词输出型
+
+  
+
 ##  数据模型 -- sparse, distributed, persistent multidimensional sorted map, which is indexed by a row key, column key, and a timestamp 
 ###  基本组件
 *   Table 
@@ -354,7 +376,7 @@ with pool.connection() as connection:
         b.put(b'row-key-5', {b'f:col1': b'5'})
     
 
-```   
+```
 
 
 ## hbase 原理
@@ -418,31 +440,7 @@ digest.digest(text.getBytes).map("%02x".format(_)).mkString
         +   比较排除
 
 
-## yichang
-2018-04-11 09:32:31.008  WARN 22225 --- [le-pool1-t18935] o.a.h.hbase.util.DynamicClassLoader      : Failed to check remote dir status /tmp/hbase-root/hbase/lib
-
-java.io.FileNotFoundException: File /tmp/hbase-root/hbase/lib does not exist
-  at org.apache.hadoop.fs.RawLocalFileSystem.listStatus(RawLocalFileSystem.java:376) ~[hadoop-common-2.6.0.jar:na]
-  at org.apache.hadoop.fs.FileSystem.listStatus(FileSystem.java:1485) ~[hadoop-common-2.6.0.jar:na]
-  at org.apache.hadoop.fs.FileSystem.listStatus(FileSystem.java:1525) ~[hadoop-common-2.6.0.jar:na]
-  at org.apache.hadoop.fs.ChecksumFileSystem.listStatus(ChecksumFileSystem.java:570) ~[hadoop-common-2.6.0.jar:na]
-  at org.apache.hadoop.hbase.util.DynamicClassLoader.loadNewJars(DynamicClassLoader.java:203) [hbase-common-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.util.DynamicClassLoader.tryRefreshClass(DynamicClassLoader.java:168) [hbase-common-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.util.DynamicClassLoader.loadClass(DynamicClassLoader.java:140) [hbase-common-1.2.0-cdh5.8.0.jar:na]
-  at java.lang.Class.forName0(Native Method) [na:1.8.0_144]
-  at java.lang.Class.forName(Class.java:348) [na:1.8.0_144]
-  at org.apache.hadoop.hbase.protobuf.ProtobufUtil.toException(ProtobufUtil.java:1545) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.protobuf.ResponseConverter.getResults(ResponseConverter.java:125) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.client.MultiServerCallable.call(MultiServerCallable.java:133) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.client.MultiServerCallable.call(MultiServerCallable.java:53) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.client.RpcRetryingCaller.callWithoutRetries(RpcRetryingCaller.java:200) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at org.apache.hadoop.hbase.client.AsyncProcess$AsyncRequestFutureImpl$SingleServerRequestRunnable.run(AsyncProcess.java:733) [hbase-client-1.2.0-cdh5.8.0.jar:na]
-  at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [na:1.8.0_144]
-  at java.util.concurrent.FutureTask.run(FutureTask.java:266) [na:1.8.0_144]
-  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [na:1.8.0_144]
-  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [na:1.8.0_144]
-  at java.lang.Thread.run(Thread.java:748) [na:1.8.0_144]
-
+## 
 
 ## 参考
 *   http://0b4af6cdc2f0c5998459-c0245c5c937c5dedcca3f1764ecc9b2f.r43.cf2.rackcdn.com/9353-login1210_khurana.pdf

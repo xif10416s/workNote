@@ -33,3 +33,5 @@ java  -Xms512M -Xmx512M -Xss1024K -XX:PermSize=256m -XX:MaxPermSize=512m -cp Kaf
  kafka 需要所有主机的host 对应的ip    
 
 bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic test
+
+zookeeper-server-start.bat ../../config/zookeeper.properties

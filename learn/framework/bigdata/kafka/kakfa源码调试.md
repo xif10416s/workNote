@@ -20,10 +20,12 @@
 
 1. windows环境测试需要下载编译好的kafka_2.11-2.4.1.tgz
    1. 通过：bin/zookeeper-server-start.sh config/zookeeper.properties启动zookeeper
-2. kafka服务启动
+2. 从config中拷贝log4j.properties  到 ，core/src/scala中（classpath中）
+   1. 添加 kafka.logs.dir=./log/my-kafka
+3. kafka服务启动
    1. 主类：kafka.Kafka
    2. 程序参数： config/server.properties
-3. 通过windows的bat命令测试
+4. 通过windows的bat命令测试
    1. kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic test2
    2.  查看zookeeper信息：bin/zookeeper-shell.sh localhost:2181
 
@@ -47,5 +49,7 @@
   * https://juejin.im/post/5c9395bcf265da612c3a3def
 * kafka程序启动，SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
   * core.iml修改slf4j的scope，直接删除
+  * 最终classpath 要有 -- https://blog.csdn.net/csdnlijingran/article/details/90694484
+    * slf4j-api、slf4j-log4j12、log4j 
 * log4j:WARN No appenders could be found for logger (kafka.utils.Log4jControllerRegistration$).
   * 从config中拷贝log4j.properties  到 ，core/src/scala中

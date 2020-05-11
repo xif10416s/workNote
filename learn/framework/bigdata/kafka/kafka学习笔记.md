@@ -34,6 +34,10 @@
 
 ##### kafka特性
 
+* 利用了磁盘连续读写性能远远高于随机读写的特点
+* 消费者：  网络 —>  pagecache(内存) —>磁盘
+* 生产者：磁盘 —> 网络      （使用sendfile将磁盘数据直接拷贝到网卡发送缓冲区）
+
 * 使用了page cache
 
 
@@ -48,6 +52,14 @@
     * min.insync.replicas: 设置为大于等于2,保证ISR中至少有两个Replica 
 
 #### Kafka集群partitions/replicas默认分配解析
+
+
+
+
+
+####  服务端处理模型
+
+
 
 
 
@@ -90,3 +102,4 @@
 #### 参考
 
 * https://blog.csdn.net/lizhitao/article/details/39499283
+* https://www.cnblogs.com/cyfonly/p/5954614.html

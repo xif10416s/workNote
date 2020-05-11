@@ -1,4 +1,4 @@
-###   kakfa源码调试
+###   kakfa源码调试 -- v2.5
 
 ###### 一，环境准备
 
@@ -19,13 +19,30 @@
 ###### 二，kafka服务器启动
 
 1. windows环境测试需要下载编译好的kafka_2.11-2.4.1.tgz
+   
    1. 通过：bin/zookeeper-server-start.sh config/zookeeper.properties启动zookeeper
 2. kafka服务启动
    1. 主类：kafka.Kafka
    2. 程序参数： config/server.properties
 3. 通过windows的bat命令测试
-   1. kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic test2
-   2.  查看zookeeper信息：bin/zookeeper-shell.sh localhost:2181
+   1. kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 2 --topic test
+   
+   2. 查看zookeeper信息：bin/zookeeper-shell.sh localhost:2181
+   
+   3. kafka-console-producer.bat --broker-list localhost:9092 --topic test
+   
+   4. kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic test
+   
+      1. 消费内部topic __consumer_offsets : 
+         1. kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic __consumer_offsets --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --consumer.config  consumer_config.properties --from-beginning
+         2. consumer.properties 添加exclude.internal.topics=false
+   
+   5. kafka-topics.bat --list --zookeeper localhost:2181
+   
+   6. ```
+      消费情况：
+      kafka-consumer-groups.bat --new-consumer --bootstrap-server localhost:9092  --describe
+      ```
 
 
 

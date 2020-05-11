@@ -63,6 +63,9 @@
         *   docker exec -it XX
             *   redis-cli -c -p 7000
                 *   redis-cli -c -p 7000 cluster nodes
+*   kafka集群
+    *   docker pull 1nj0zren.mirror.aliyuncs.com/wurstmeister/kafka
+        *   docker-compose up -d --scale=kafka=3
     
 
 

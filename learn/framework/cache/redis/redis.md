@@ -144,13 +144,27 @@
   | :------------------------ | ------------------------- | ---------------------- |
   | REDIS_ENCODING_INT        | long类型的整数            | String                 |
   | REDIS_ENCODING_EMBSTR     | emStr编码的简单动态字符串 | String                 |
-  | REDIS_ENCODING_RAW        | 简单动态字符串            | String                 |
+  | REDIS_ENCODING_RAW        | 简单动态字符串SDS         | String                 |
   | REDIS_ENCODING_HT         | 字典，hashtable           | SET,HASH               |
   | REDIS_ENCODING_LINKEDLIST | 双向链表                  | List                   |
   | REDIS_ENCODING_ZIPLIST    | 压缩列表                  | List,HASH(数量小),ZSET |
   | REDIS_ENCODING_INTSET     | 整数集合                  | SET                    |
   | REDIS_ENCODING_SKIPLIST   | 跳表和字典                | ZSET                   |
   |                           |                           |                        |
+
+
+
+#####  简单动态字符串SDS 优势、
+
+* sds本质分为三部分：**header、buf、null结尾符**，其中header可以认为是整个sds的指引部分，给定了使用的空间大小、最大分配大小等信息
+  * ![img](.\sds.png)
+
+* **O(1)获取长度**: C字符串需要遍历而sds中有len可以直接获得；
+* **防止缓冲区溢出bufferoverflow**: 当sds需要对字符串进行修改时，首先借助于len和alloc检查空间是否满足修改所需的要求，如果空间不够的话，SDS会自动扩展空间，避免了像C字符串操作中的覆盖情况；
+* **有效降低内存分配次数**：C字符串在涉及增加或者清除操作时会改变底层数组的大小造成重新分配、sds使用了**空间预分配和惰性空间释放机制**，说白了就是每次在扩展时是成倍的多分配的，在缩容是也是先留着并不正式归还给OS，这两个机制也是比较好理解的；
+* **二进制安全**：C语言字符串只能保存ascii码，对于图片、音频等信息无法保存，sds是二进制安全的，写入什么读取就是什么，不做任何过滤和限制；
+
+
 
 #### 内存回收和内存共享
 
@@ -221,4 +235,5 @@
 *	https://www.cnblogs.com/yangzhilong/p/7605807.html
 *	https://github.com/redisson/redisson/wiki/目录
 *	https://github.com/redisson/redisson/wiki/%E7%9B%AE%E5%BD%95
+*	https://mp.weixin.qq.com/s?__biz=MzA5MTc0NTMwNQ==&mid=2650719859&idx=1&sn=b55cd8838329737c3056681a4ed1e430&chksm=887ddb05bf0a52138f027cf0b20a8b3a80c6f256baaf290b121f6ac74396169355ae9e083bbd&scene=126&sessionid=1588727501&key=99ef7414318fbe187906b9d55955ae67700442af3a87c5d6ae82c4d182176b0f85cd13de5d5439fceab6b2ba4bc6b91782b12b149cd872059c18184f02e017fbd2b1621f9606ff8878ecf4c18e0e49c2&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10&version=62080079&lang=zh_CN&exportkey=AfrwBXccwRBcndnocCkYjcE%3D&pass_ticket=LPSbkDJNYtM03WvFhUCwCDhlPxk2J8JL7vu0h%2FKRQNaVG30YE5Z7z3K%2FQ4ckpqvB
 

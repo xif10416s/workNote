@@ -171,7 +171,7 @@
 #####  简单动态字符串SDS 优势、
 
 * sds本质分为三部分：**header、buf、null结尾符**，其中header可以认为是整个sds的指引部分，给定了使用的空间大小、最大分配大小等信息
-  * ![img](.\sds.png)
+  * ![img](./sds.png)
 
 * **O(1)获取长度**: C字符串需要遍历而sds中有len可以直接获得；
 * **防止缓冲区溢出bufferoverflow**: 当sds需要对字符串进行修改时，首先借助于len和alloc检查空间是否满足修改所需的要求，如果空间不够的话，SDS会自动扩展空间，避免了像C字符串操作中的覆盖情况；
@@ -193,7 +193,7 @@
 
 ###### ziplist总体结构
 
-* ![img](.\ziplist_arc.pnt)
+* ![img](./ziplist_arc.pnt)
 * ![img](.\zip_list_2.png)
 
 
@@ -201,7 +201,7 @@
 ##### Redis的Zset和跳跃链表问题 -- TODO
 
 * ZSet结构同时包含一个字典和一个跳跃表，跳跃表按score从小到大保存所有集合元素。字典保存着从member到score的映射。两种结构通过指针共享相同元素的member和score，不浪费额外内存。
-* ![img](.\zset.png)
+* ![img](./zset.png)
 
 
 
@@ -211,7 +211,7 @@
 
 * 字典结构
 
-  * ![img](.\dict.png)
+  * ![img](./dict.png)
 
 * ```
   //哈希节点结构 -- 类似 hashmap 中的entry ,存放数据用，
@@ -282,7 +282,7 @@
 
 * 反应堆模式主要用于同步IO,异步IO有proactor模式
 *  Redis中支持多种IO复用，源码中使用相应的宏定义进行选择，编译时就可以获取当前系统支持的最优的IO复用函数来使用，从而实现了Redis的优秀的可移植特性。
-* ![img](.\redis_reactor.png)
+* ![img](./redis_reactor.png)
 * redis 主工作线程是单线程的，通过一个线程实现IO多路复用，逐一放入队列
 * redis事件分派器，包含事件类型：
   * AE_READABLE 客户端写数据、关闭连接、新连接到达
@@ -311,7 +311,7 @@
 ####  redis 集群
 
 * 单实例一主两从+读写分离结构:
-  * <img src=".\master_slave_1.png" alt="img" style="zoom:33%;" />
+  * <img src="./master_slave_1.png" alt="img" style="zoom:33%;" />
 * 集群与分片
   * 要支持集群首先要克服的就是分片问题，也就是一致性哈希问题，常见的方案有三种：
     * **客户端分片**：这种情况主要是类似于哈希取模的做法，当客户端对服务端的数量完全掌握和控制时，可以简单使用。

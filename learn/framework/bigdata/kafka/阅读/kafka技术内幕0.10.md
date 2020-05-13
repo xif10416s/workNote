@@ -13,7 +13,7 @@
   * 预读（read-ahead) : 提前将一个比较大的磁盘块读入内存
   * 后写（write-behind): 将很多小的逻辑写操作合并起来组成大的物理写操作
   * 操作系统会将主内存剩余的所有空闲内存用作磁盘缓存（disk cacke/page cache)
-    * <img src="..\images\disk_write.png" alt="image-20200510092952692" style="zoom:50%;" />
+    * <img src="../images/disk_write.png" alt="image-20200510092952692" style="zoom:50%;" />
     * kafka直接写入磁盘缓存，由操作系统定期刷新到磁盘文件
   * 顺序读写文件
   * 采用零拷贝技术读取文件数据通过网络发送给消费者

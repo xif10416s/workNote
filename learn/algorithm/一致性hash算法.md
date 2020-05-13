@@ -12,13 +12,13 @@
 
 * 一致性hash是对2^32取模， 假设有一个圆环：
   * 对2 ^32取余是有依据的IPV4最大数量就是2^32，所以这样就能保证所有的ip的地址进行取余时不会重复—对应hash环上面的正数。
-  * ![Alt text](.\images\hashring.png)
+  * ![Alt text](./images/hashring.png)
 * 服务器位置确定（假定3台服务器ABC)：
   * 用服务器IP地址进行hash计算，使用hash后的结果改过对2^32取模，落在环上
-  * ![Alt text](.\images\sring.png)
+  * ![Alt text](./images/sring.png)
 * 从哪台服务器获取或者保持数据？
   * hash(key)  % 2 ^ 32 落在环上
-  * ![Alt text](.\images\kring.png)
+  * ![Alt text](./images/kring.png)
   * 沿着顺时针方向遇到的第一个服务器就是A服务器，所以会被缓存到A服务器上
 
 

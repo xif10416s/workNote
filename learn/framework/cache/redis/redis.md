@@ -6,15 +6,18 @@
 *	性能对比
 	*	 redis 只使用单核，而 memcached 可以使用多核，所以平均每一个核上 redis 在存储小数据时比 memcached 性能更高。而在 100k 以上的数据中，memcached 性能要高于 redis，虽然 redis 最近也在存储大数据的性能上进行优化，但是比起 memcached，还是稍有逊色。
 *	redis 的线程模型
-	*	redis 内部使用文件事件处理器 file event handler，这个文件事件处理器是单线程的。它采用 IO 多路复用机制同时监听多个 socket，根据 socket 上的事件来选择对应的事件处理器进行处理。
+  *	redis 内部使用文件事件处理器 file event handler，这个文件事件处理器是单线程的。它采用 IO 多路复用机制同时监听多个 socket，根据 socket 上的事件来选择对应的事件处理器进行处理。
+    *	单线程是与客户端交互完成命令请求和回复的工作现场
+    *	还有一些辅助工作，bgsave持久化刷新，惰性删除任务等会启动其他线程
 
 #### redis 持久化机制
 *	Redis的一种持久化方式叫快照（snapshotting，RDB）
 	*	Redis可以通过创建快照来获得存储在内存里面的数据在某个时间点上的副本
 	*	快照持久化是Redis默认采用的持久化方式，在redis.conf配置文件中有配置
 	*	特点： 
-		*	全量内存序列化备份，恢复速度快
+		*	全量内存二进制序列化备份，恢复速度快
 		*	fork一个子进程，对主进程不影响，内存加倍
+		  *	当数据量较大的情况下，fork子进程这个操作很消耗cpu，可能会发生长达秒级别的阻塞情况。
 		*	备份时间长，性能差，间隔不能太短，丢失数据多
 *	另一种方式是只追加文件（append-only file,AOF）
 	*	与快照持久化相比，AOF持久化 的实时性更好，因此已成为主流的持久化方案
@@ -25,11 +28,22 @@
 	*	按小时级别保存快照，按秒级别aof
 	*	重启时按最近快照加载aof，然后更新增量aof
 
+###### **持久化实战**
+
+* 在实际使用中需要根据Redis作为主存还是缓存、数据完整性和缺失性的要求、CPU和内存情况等诸多因素来确定适合自己的持久化方案，一般来说稳妥的做法包括：
+  * 最安全的做法是RDB与AOF同时使用，即使AOF损坏无法修复，还可以用RDB来恢复数据，当然在持久化时对性能也会有影响。
+  * Redis当简单缓存，没有缓存也不会造成缓存雪崩只使用RDB即可。
+  * 不推荐单独使用AOF，因为AOF对于数据的恢复载入比RDB慢，所以使用AOF的时候，最好还是有RDB作为备份。
+  * 采用新版本Redis 4.0的持久化新方案。
+
+
+
 #### fork copy-on-write
 *	创建一个一模一样的进程，内存也复制
 *	fork（）会产生一个和父进程完全相同的子进程，但子进程在此后多会exec系统调用，出于效率考虑，linux中引入了“写时复制“技术，也就是只有进程空间的各段的内容要发生变化时，才会将父进程的内容复制一份给子进程。
 	*	 在fork之后exec之前两个进程用的是相同的物理空间（内存区），子进程的代码段、数据段、堆栈都是指向父进程的物理空间，也就是说，两者的虚拟空间不同，但其对应的物理空间是同一个
 	*	写时复制技术：内核只为新生成的子进程创建虚拟空间结构，它们来复制于父进程的虚拟究竟结构，但是不为这些段分配物理内存，它们共享父进程的物理空间，当父子进程中有更改相应段的行为发生时，再为子进程相应的段分配物理空间。
+*	资源的复制只有在需要写入的时候才进行，在此之前，只是以只读方式共享
 
 #### redis使用场景
 *	String 
@@ -102,7 +116,7 @@
 
 *	高可用 -- 主从备份，切换
 *	压力 -- 分片集群
-*	一致性hash算法  （Canssandra也是）
+*	[一致性hash算法  （Canssandra也是)](../../../algorithm/一致性hash算法.md)
 
 #### AKF -- 根据业务划分数据到不同的redis
 *	x：冗余备份，高可用
@@ -166,6 +180,121 @@
 
 
 
+##### Redis的ZIPLIST的底层设计和实现 -- TODO
+
+* **连续内存的双面性**
+  * 连续型内存减少了内存碎片，但是一大块都是连续的内存又不容易满足。
+
+*   **压缩列表承载元素的多样性**
+  * 压缩列表对元素的类型没有约束，也就是说不知道是什么数据类型和长度，这个有点像TCP粘包拆包的做法了，需要我们指定结尾符或者指定单个存储的元素的长度，要不然数据都粘在一起了。
+* **属性的常数级耗时获取**
+  * 我们解决了前面两点考虑，但是作为一个整体，压缩列表需要常数级消耗提供一些总体信息，比如总长度、已存储元素数量、尾节点位置(实现尾部的快速插入和删除)等，这样对于操作压缩列表意义很大。
+* **数据结构对增删的支持**
+
+###### ziplist总体结构
+
+* ![img](.\ziplist_arc.pnt)
+* ![img](.\zip_list_2.png)
+
+
+
+##### Redis的Zset和跳跃链表问题 -- TODO
+
+* ZSet结构同时包含一个字典和一个跳跃表，跳跃表按score从小到大保存所有集合元素。字典保存着从member到score的映射。两种结构通过指针共享相同元素的member和score，不浪费额外内存。
+* ![img](.\zset.png)
+
+
+
+
+
+##### Redis的字典是如何实现的？简述渐进式rehash过程 -- 基于hashtable实现字典
+
+* 字典结构
+
+  * ![img](.\dict.png)
+
+* ```
+  //哈希节点结构 -- 类似 hashmap 中的entry ,存放数据用，
+  typedef struct dictEntry {
+      void *key;
+      union {
+          void *val;
+          uint64_t u64;
+          int64_t s64;
+          double d;
+      } v;
+      struct dictEntry *next;  -- 哈希冲突的时候存放的链表结构
+  } dictEntry;
+  
+  //封装的是字典的操作函数指针
+  typedef struct dictType {
+      uint64_t (*hashFunction)(const void *key);
+      void *(*keyDup)(void *privdata, const void *key);
+      void *(*valDup)(void *privdata, const void *obj);
+      int (*keyCompare)(void *privdata, const void *key1, const void *key2);
+      void (*keyDestructor)(void *privdata, void *key);
+      void (*valDestructor)(void *privdata, void *obj);
+  } dictType;
+  
+  /* This is our hash table structure. Every dictionary has two of this as we
+   * implement incremental rehashing, for the old to the new table. */
+  //哈希表结构 该部分是理解字典的关键
+  typedef struct dictht {
+      dictEntry **table;  -- 数组，每个元素都是一个指向dictEntry的结构的指针，每个dictEntry结构保存一个键值对
+      unsigned long size; -- 记录了table大小
+      unsigned long sizemask;  -- size -1  和 哈希值算一个建在table数组的索引时使用
+      unsigned long used; -- 
+  } dictht;
+  
+  //字典结构
+  typedef struct dict {
+      dictType *type;
+      void *privdata;
+      dictht ht[2];
+      long rehashidx; /* rehashing not in progress if rehashidx == -1 */
+      unsigned long iterators; /* number of iterators currently running */
+  } dict;
+  ```
+
+* 字典的hash算法-- MurmurHash算法计算哈希值
+
+  * MurmurHash算法的无论数据输入情况如何都可以给出随机分布性较好的哈希值并且计算速度非常快，目前有MurmurHash2和MurmurHash3等版本。
+
+* **普通Rehash重新散列**
+
+  * 扩缩容是通过执行rehash重新散列来完成，对字典的哈希表执行普通rehash的基本步骤为**分配空间->逐个迁移->交换哈希表**
+  * ht[1] 作为扩容table, 容量为 ht[0]实际使用table的2倍数量的第一个2^n，因为容量都是2^n的
+  * 将ht[0]数据迁移到h[1],释放h[0],将h[1]设置我h[0],给h[1]创建空白表，为下一次rehash准备
+
+* **渐进Rehash过程**
+
+  * Redis的rehash动作并不是一次性完成的，而是分多次、渐进式地完成的，原因在于当哈希表里保存的键值对数量很大时， 一次性将这些键值对全部rehash到ht[1]可能会导致服务器在一段时间内停止服务，这个是无法接受的。
+  * 主要原理：
+    * 将迁移的动作分散到每次对字典执行增删改查的操作上，避免同一时间压力
+      * 对字典操作的同时，会将ht[0]在rehashidx索引上的所有键值对rehash到h[1],完成之后对rehashidx 加一
+  * 渐进式避免了redis在rehash时的阻塞，但是：
+    * rehash期间有两个hash表同时在使用，redis内存会增加
+    * 所有操作都会从两个表里执行，先从ht[0],如果没有，再从ht[1]
+
+
+
+#####  Redis反应堆模式reactor -- io复用 + 事件驱动
+
+* 反应堆模式主要用于同步IO,异步IO有proactor模式
+*  Redis中支持多种IO复用，源码中使用相应的宏定义进行选择，编译时就可以获取当前系统支持的最优的IO复用函数来使用，从而实现了Redis的优秀的可移植特性。
+* ![img](.\redis_reactor.png)
+* redis 主工作线程是单线程的，通过一个线程实现IO多路复用，逐一放入队列
+* redis事件分派器，包含事件类型：
+  * AE_READABLE 客户端写数据、关闭连接、新连接到达
+  * AE_WRITEABLE 客户端读数据
+* redis事件处理器：
+  * 连接应答处理器：实现新连接的建立
+  * 命令请求处理器：处理客户端的新命令
+  * 命令回复处理器：返回客户端的请求结果
+  * 复制处理器：实现主从服务器的数据复制
+
+
+
 #### 内存回收和内存共享
 
   * 内存回收 ---  **因为c语言不具备自动内存回收功能，当将redisObject对象作为数据库的键或值而不是作为参数存储时其生命周期是非常长的，为了解决这个问题，Redis自己构建了一个内存回收机制，通过redisobject结构中的refcount实现.这个属性会随着对象的使用状态而不断变化。**
@@ -179,7 +308,21 @@
 
 
 
-#### redis I/O模型 -- TODO
+####  redis 集群
+
+* 单实例一主两从+读写分离结构:
+  * <img src=".\master_slave_1.png" alt="img" style="zoom:33%;" />
+* 集群与分片
+  * 要支持集群首先要克服的就是分片问题，也就是一致性哈希问题，常见的方案有三种：
+    * **客户端分片**：这种情况主要是类似于哈希取模的做法，当客户端对服务端的数量完全掌握和控制时，可以简单使用。
+    * **中间层分片**：这种情况是在客户端和服务器端之间增加中间层，充当管理者和调度者，客户端的请求打向中间层，由中间层实现请求的转发和回收，当然中间层最重要的作用是对多台服务器的动态管理。
+    * **服务端分片**：不使用中间层实现去中心化的管理模式，客户端直接向服务器中任意结点请求，如果被请求的Node没有所需数据，则像客户端回复MOVED，并告诉客户端所需数据的存储位置，这个过程实际上是客户端和服务端共同配合，进行请求重定向来完成的。
+  * **中间层分片的集群版Redis**
+    * 核心思想都是在多个Redis服务器和客户端Client中间增加分片层，由分片层来完成数据的一致性哈希和分片问题，每一家的做法有一定的区别，但是要解决的核心问题都是多台Redis场景下的扩缩容、故障转移、数据完整性、数据一致性、请求处理延时等问题。
+      * 国内豌豆荚的Codis、国外Twiter的twemproxy
+  * **服务端分片的官方集群版本**
+    * Gossip协议：解决集群中多结点状态通知的问题，充当了中间层的管理部分的通信协议
+      * 去中心化和通信机制
 
 
 
@@ -217,8 +360,6 @@
    
 
   
-
-
 
 ##### 参考：
 

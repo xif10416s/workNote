@@ -193,15 +193,15 @@
 
 ###### ziplist总体结构
 
-* ![img](./ziplist_arc.pnt)
-* ![img](.\zip_list_2.png)
+* ![img](./images/ziplist_arc.png)
+* ![img](./images/zip_list_2.png)
 
 
 
 ##### Redis的Zset和跳跃链表问题 -- TODO
 
 * ZSet结构同时包含一个字典和一个跳跃表，跳跃表按score从小到大保存所有集合元素。字典保存着从member到score的映射。两种结构通过指针共享相同元素的member和score，不浪费额外内存。
-* ![img](./zset.png)
+* ![img](./images/zset.png)
 
 
 
@@ -211,7 +211,7 @@
 
 * 字典结构
 
-  * ![img](./dict.png)
+  * ![img](./images/dict.png)
 
 * ```
   //哈希节点结构 -- 类似 hashmap 中的entry ,存放数据用，
@@ -297,6 +297,9 @@
 
 #### 内存回收和内存共享
 
+* Redis占用的内存是分为两部分：存储键值对消耗和本身运行消耗
+  * 键值对可以分为几种：带过期的、不带过期的、热点数据、冷数据。
+
   * 内存回收 ---  **因为c语言不具备自动内存回收功能，当将redisObject对象作为数据库的键或值而不是作为参数存储时其生命周期是非常长的，为了解决这个问题，Redis自己构建了一个内存回收机制，通过redisobject结构中的refcount实现.这个属性会随着对象的使用状态而不断变化。**
     * 创建一个新对象，属性初始化为1
     * 对象被一个新程序使用，属性refcount加1
@@ -306,12 +309,35 @@
     * 将数据块的键的值指针指向一个现有值的对象
     * 将被共享的值对象引用refcount加1 Redis的共享对象目前只支持整数值的字符串对象。之所以如此，实际上是对内存和CPU（时间）的平衡：共享对象虽然会降低内存消耗，但是判断两个对象是否相等却需要消耗额外的时间。对于整数值，判断操作复杂度为o(1),对于普通字符串，判断复杂度为o(n);而对于哈希，列表，集合和有序集合，判断的复杂度为o(n^2).虽然共享的对象只能是整数值的字符串对象，但是5种类型都可能使用共享对象。
 
+######  **键值对的存储**
+
+* Redis本质上就是一个大的key-value，key就是字符串，value有是几种对象：字符串、列表、有序列表、集合、哈希等，这些key-value都是存储在redisDb的dict中的，来看下**黄健宏**画的一张非常赞的图：
+
+* ```
+  
+  typedef struct redisDb {
+      dict *dict;                 /* The keyspace for this DB */
+      dict *expires;              /* Timeout of keys with a timeout set */
+      dict *blocking_keys;        /* Keys with clients waiting for data (BLPOP)*/
+      dict *ready_keys;           /* Blocked keys that received a PUSH */
+      dict *watched_keys;         /* WATCHED keys for MULTI/EXEC CAS */
+      int id;                     /* Database ID */
+      long long avg_ttl;          /* Average TTL, just for stats */
+      unsigned long expires_cursor; /* Cursor of the active expire cycle. */
+      list *defrag_later;         /* List of key names to attempt to defrag one by one, gradually. */
+  } redisDb;
+  ```
+
+* ![img](./images/redis_key_value.png)
+
+
+
 
 
 ####  redis 集群
 
 * 单实例一主两从+读写分离结构:
-  * <img src="./master_slave_1.png" alt="img" style="zoom:33%;" />
+  * <img src="./images/master_slave_1.png" alt="img" style="zoom:33%;" />
 * 集群与分片
   * 要支持集群首先要克服的就是分片问题，也就是一致性哈希问题，常见的方案有三种：
     * **客户端分片**：这种情况主要是类似于哈希取模的做法，当客户端对服务端的数量完全掌握和控制时，可以简单使用。

@@ -30,10 +30,12 @@ ENV LANG=en_US.UTF-8
 
 RUN yum install -y wget bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
-    git mercurial subversion
+    git mercurial subversion   
+
+RUN yum install -y gcc  postgresql-devel*    
 
 RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/archive/Anaconda3-2019.07-Linux-x86_64.sh -O ~/anaconda.sh && \
+    wget --quiet https://repo.continuum.io/archive/Anaconda3-2019.03-Linux-x86_64.sh -O ~/anaconda.sh && \
     /bin/bash ~/anaconda.sh -b -p /opt/conda && \
     rm ~/anaconda.sh
 
@@ -50,21 +52,40 @@ RUN yum -y install sudo \
 && yum -y install openssh-server \
 && yum -y install openssh-clients \
 && yum -y install vim \
-&& yum -y install git \
+&& yum -y install git 
 
 # 修改root密码
-RUN echo "root" | passwd --stdin root
+RUN echo "root" | passwd --stdin root 
 
+RUN echo " cd /home/rmis/rmis_renege_analysis_algorithmn &&  /opt/conda/bin/python renege_analysis_algorithmn.py > /home/rmis/log.log  >&1 & " >> /etc/rc.local 
+RUN chmod 777 /etc/rc.local 
+
+
+ARG gitUser
+ARG gitPass
+ARG serverPort
+
+RUN mkdir /home/rmis \
+&& git clone https://${gitUser}:${gitPass}@code.aliyun.com/datamind/rmis-algorithm.git /home/rmis \
+&&  pip install -r /home/rmis/requirements.txt   -i https://mirrors.aliyun.com/pypi/simple/
+
+WORKDIR /home/rmis/rmis_renege_analysis_algorithmn
 
 # 开放22号端口
 EXPOSE 22
+EXPOSE ${serverPort}
 
 
-
-CMD /bin/bash  ; /usr/sbin/sshd -D
+CMD   /bin/bash  ; /usr/sbin/sshd -D ; /etc/rc.local ;
 
 ```
 
+
+#### build
+* docker build -t ms:latest  --build-arg gitUser=xif10416s --build-arg gitPass='!QAZ1qaz1qaz' --build-arg serverPort=8801 .
+* docker build -t ms:latest  --no-cache --build-arg gitUser=xif10416s --build-arg gitPass='!QAZ1qaz1qaz' --build-arg serverPort=8801 .
+* docker run -d -it -p  28022:22 -p 5000:5000 --privileged=true -h="base_centos7"   --name base_centos7 ms:latest /usr/
+sbin/init
 
 ####  参考
 *	https://www.cnblogs.com/edisonchou/p/dockerfile_inside_introduction.html

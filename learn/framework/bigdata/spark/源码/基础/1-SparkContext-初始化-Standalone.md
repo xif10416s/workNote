@@ -1,4 +1,4 @@
-#   SparkContext -- v 2.2
+#   SparkContext -- v 2.2 -- Standalone
 *   Spark的对外接口，代表了与spark 集群交互的连接,负责向调用这提供Spark的各种功能
 *   主要功能：
     -   在集群上，创建RDD,累加器，广播变量等
@@ -32,7 +32,7 @@
             *   spark standalone模式：
                 -   StandaloneSchedulerBackend
             *   其他模式，通过外部加载方式动态调用:
-                -   加载META-INF.services文件中的配置的ExternalClusterManager实现类
+                -   加载META-INF.services文件中的配置的ExternalClusterManager实现类  <-- SPI
                 -   实例化类，并调用canCreate方法匹配url，匹配成功的通过该Manager创建对应的schedualBackend，与taskScheduler
                 -   yarn模式(源码位置：resource-managers/yarn)：
                     +   在resources的META-INF.services文件中配置为：org.apache.spark.scheduler.cluster.YarnClusterManager

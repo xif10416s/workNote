@@ -66,6 +66,8 @@
 
 ### kong 网关
 
+* OpenResty（也称为 ngx_openresty）是一个全功能的 Web 应用服务器。它打包了标准的 Nginx 核心，很多的常用的第三方模块，以及它们的大多数依赖项。
+
 ### config server
 *   https://www.jianshu.com/p/b43f41cdcbe2
 

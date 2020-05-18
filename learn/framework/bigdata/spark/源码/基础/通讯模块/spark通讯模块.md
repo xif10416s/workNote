@@ -126,10 +126,10 @@
 		*	RpcMessage ： 最终调用endpoint.receiveAndReply，消息处理后返回响应消息
 	*	OutboxMessage
 		*   OneWayOutboxMessage
-		*	RpcOutboxMessage
+		*	RpcOutboxMessage`
 
 ######	[基础类图]
-![](https://github.com/xif10416s/workNote/blob/master/learn/framework/bigdata/spark/images/rpc_endpoints_loops_class.jpg)	
+![](../../../images/rpc_endpoints_loops_class.jpg)	
 
 ######	核心流程图
 ![](../../../images/common_rpc.png)

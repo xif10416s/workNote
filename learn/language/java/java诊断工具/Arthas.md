@@ -13,6 +13,8 @@
 
 ### 在线教程
 *	https://alibaba.github.io/arthas/arthas-tutorials?language=cn
+*	curl -O https://alibaba.github.io/arthas/arthas-boot.jar
+*	java -jar arthas-boot.jar
 
 ###  原理
 *	https://github.com/alibaba/arthas/issues?q=label%3Auser-case

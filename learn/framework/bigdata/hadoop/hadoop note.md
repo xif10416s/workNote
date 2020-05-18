@@ -57,3 +57,13 @@
     -   一个HA集群2台NameNOde,每个NameNode运行自己的ZKFC进程
 
 https://www.w3cschool.cn/hadoop/xvmi1hd6.html
+
+
+
+####  安全问题
+
+* YARN提供有默认开放在8088和8090的REST API（默认前者）允许用户直接通过API进行相关的应用创建、任务提交执行等操作，如果配置不当，REST API将会开放在公网导致未授权访问的问题，那么任何黑客则就均可利用其进行远程命令执行，从而进行挖矿等行为。
+  * https://www.jianshu.com/p/d5a4d085d32f
+
+
+

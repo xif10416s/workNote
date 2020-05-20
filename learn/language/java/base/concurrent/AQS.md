@@ -11,6 +11,7 @@
     * 在节点中用"status"字段来跟踪每个节点是否处于阻塞状态
     * 每个节点在在其前面一个节点释放同步状态后，前驱节点将会通知该节点去获取同步状态--即：发出信号通知该节点、、、
     * CLH队列中的每个节点中的线程都有机会尝试获取同步状态，但是并不能保证一定获取成功
+    
   * CLH队列
     * CLH(Craig, Landin, andHagersten)根据三个人的名字命名的队列
     * 它是队列锁的一个变种(variant)，通常用于自旋锁(这个源码中会有体现),用它代替阻塞同步器
@@ -19,6 +20,14 @@
     * 加入到CLH队列中的节点会被加入到队列的尾部，并保证加入时的原子性
     * 节点弹出队列的时候只需要将头节点head移除即可
     * 队列中的每个节点都有一个唯一的线程，用该线程来获取同步状态
+    
+  * LockSupport
+  
+    * park -- 挂起线程
+  
+    * ```
+      unpark(Thread thread) 唤醒指定线程
+      ```
 
 #####  基本功能
 
@@ -34,19 +43,33 @@
 
 
 
-##### **Condition 简介**
+####  公平锁 & 非公平锁
 
-* Condition`是在`java 1.5`中才出现的，它用来替代传统的`Object`的`wait()`、`notify()`实现线程间的协作，相比使用`Object`的`wait()`、`notify()`，使用`Condition`中的`await()`、`signal()`这种方式实现线程间协作更加安全和高效。因此通常来说比较推荐使用`Condition
-* condition 增加一个condition队列
-* condition不会产生死锁，底层是park/unpark实现
+* **非公平锁**和**公平锁**的区别：**非公平锁**性能高于**公平锁**性能。**非公平锁**可以减少`CPU`唤醒线程的开销，整体的吞吐效率会高点，`CPU`也不必取唤醒所有线程，会减少唤起线程的数量
+* **非公平锁**性能虽然优于**公平锁**，但是会存在导致**线程饥饿**的情况。在最坏的情况下，可能存在某个线程**一直获取不到锁**。不过相比性能而言，饥饿问题可以暂时忽略，这可能就是`ReentrantLock`默认创建非公平锁的原因之一了。
+
+
 
 #####  主要实现
 
 * ReentrantLock
-  * **非公平锁**和**公平锁**的区别：**非公平锁**性能高于**公平锁**性能。**非公平锁**可以减少`CPU`唤醒线程的开销，整体的吞吐效率会高点，`CPU`也不必取唤醒所有线程，会减少唤起线程的数量
-  * **非公平锁**性能虽然优于**公平锁**，但是会存在导致**线程饥饿**的情况。在最坏的情况下，可能存在某个线程**一直获取不到锁**。不过相比性能而言，饥饿问题可以暂时忽略，这可能就是`ReentrantLock`默认创建非公平锁的原因之一了。
+  * 对比Synchronized :
+  * Synchronized 无法设置超时时间，ReentrantLock可以设置获取锁的超时时间
+    
+    * Synchronized 无法实现公平锁，ReentrantLock 可以实现公平锁
+  * ##### **Condition 简介**
+    * Condition`是在`java 1.5`中才出现的，它用来替代传统的`Object`的`wait()`、`notify()`实现线程间的协作，相比使用`Object`的`wait()`、`notify()`，使用`Condition`中的`await()`、`signal()`这种方式实现线程间协作更加安全和高效。因此通常来说比较推荐使用`Condition
+    * condition 增加一个condition队列
+    * condition不会产生死锁，底层是park/unpark实现
+  
+* CountDownLatch -
 
-* CountDownLatch - - 
+  * 通过一个计数器，初始值为线程数，当线程执行完成，计数器就减1，当所有线程执行完成，计数器为0时，继续执行
+
+* Cyclicbattier
+
+  * 类似CountDownLatch ，协调重循环通过一个屏障
+  * CountDownLatch基于AQS的共享模式，而CycliBarrier基于Condition实现
 
 
 

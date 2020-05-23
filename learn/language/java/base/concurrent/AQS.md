@@ -24,10 +24,9 @@
   * LockSupport
   
     * park -- 挂起线程
-  
-    * ```
-      unpark(Thread thread) 唤醒指定线程
-      ```
+  * unpark(Thread thread) 唤醒指定线程
+    * parkNanos ，超时阻塞
+    * parkUntil ， 阻塞直到
 
 #####  基本功能
 
@@ -53,9 +52,11 @@
 #####  主要实现
 
 * ReentrantLock
-  * 对比Synchronized :
-  * Synchronized 无法设置超时时间，ReentrantLock可以设置获取锁的超时时间
+  
+  * 当前线程可以反复加锁，但也需要释放同样加锁次数的锁，即重入了多少次，就要释放多少次，不然也会导入锁不被释放
     
+  * 对比Synchronized :
+    * Synchronized 无法设置超时时间，ReentrantLock可以设置获取锁的超时时间
     * Synchronized 无法实现公平锁，ReentrantLock 可以实现公平锁
   * ##### **Condition 简介**
     * Condition`是在`java 1.5`中才出现的，它用来替代传统的`Object`的`wait()`、`notify()`实现线程间的协作，相比使用`Object`的`wait()`、`notify()`，使用`Condition`中的`await()`、`signal()`这种方式实现线程间协作更加安全和高效。因此通常来说比较推荐使用`Condition
@@ -70,6 +71,16 @@
 
   * 类似CountDownLatch ，协调重循环通过一个屏障
   * CountDownLatch基于AQS的共享模式，而CycliBarrier基于Condition实现
+  
+* #### ArrayBlockingQueue
+
+  * 一个由数据支持的有界阻塞队列，此队列FIFO原则对元素进行排序。队列头部在队列中存在的时间最长，队列尾部存在时间最短。
+
+* #### PriorityBlockingQueue
+
+  * 一个支持优先级排序的无界阻塞队列，但它不会阻塞数据生产者，而只会在没有可消费的数据时，阻塞数据的消费者
+
+* 
 
 
 

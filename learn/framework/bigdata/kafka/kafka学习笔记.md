@@ -51,6 +51,14 @@
      仅设置acks=-1也不能保证数据不丢失,当Isr列表中只有Leader时,同样有可能造成数据丢失。要保证数据不丢除了设置acks=-1, 还要保 证ISR的大小大于等于2,具体参数设置:
     * min.insync.replicas: 设置为大于等于2,保证ISR中至少有两个Replica 
 
+
+
+#####  kafka客户端发送内存池
+
+* [参考](https://mp.weixin.qq.com/s?__biz=MzIwMzY1OTU1NQ==&mid=2247489691&idx=2&sn=0a7a3be1596d92a21262f5a970099f76&chksm=96cd58d7a1bad1c1cd6d85f6507f69bc71ea59f79c5246e59bb6f727e40322c7e0988783eaf3&scene=126&sessionid=1590110132&key=e174f1e696a7752ea00d96190be4312c87f28c883e861f74071887afd25f05da7968cc5dcda7c2cc18364dd7c6fa35e33bba7d10b5d611e1bef3744ebea2cc87e5778453a6bee9a42387a172f75b02cd&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=AaCzlIO8BVq1GGvyL4rMO6E%3D&pass_ticket=%2BRKQ1BKzGE5RwRzwv4Me05YPu92msgmfvDPIUy7i3CKhLYWHhoK2lTtQyutRpLk2)
+
+
+
 #### Kafka集群partitions/replicas默认分配解析
 
 

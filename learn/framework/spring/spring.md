@@ -82,6 +82,12 @@
 
 
 
+##### spring事务传播机制
+
+* 
+
+
+
 #### @Transactional
 
 * https://www.ibm.com/developerworks/cn/java/j-master-spring-transactional-use/index.html

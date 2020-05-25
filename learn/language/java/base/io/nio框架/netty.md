@@ -81,6 +81,12 @@
     -   6，主线程从promise获取连接完成的channel
 
 
+
+####  netty 心跳处理 TODO
+
+
+
+
 ## 参考资料
 *   [Netty 4.x学习笔记 - 线程模型](http://yihongwei.com/2014/01/netty-4-x-thread-model/)
 *   [Netty 4.x 用户指南](http://wiki.jikexueyuan.com/project/netty-4-user-guide/writing-discard-server.html)

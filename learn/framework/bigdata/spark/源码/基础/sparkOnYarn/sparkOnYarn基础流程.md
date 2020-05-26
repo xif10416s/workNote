@@ -66,6 +66,9 @@ $ ./bin/spark-submit --class my.main.Class \
 
 ####  sparkcontext初始化过程--on yarn
 
+* deploy-mode为client的情况是在driver端执行目标 my.main.Class ， sparkContext的初始化也在driver端
+* deploy-mode为cluster的情况，会通过yarnClient提交给ResourceManager,  启动一个Container运行AM,在AM中执行my.main.Class（driver 程序），sparkContext的初始化在Conainer中
+
 ```
 1. driver端 初始化 sparkcontext, 会根据master配置适用不同的SchedulerBackend实现类, 以及taskScheduler的实现类
 val (sched, ts) = SparkContext.createTaskScheduler(this, master, deployMode)
@@ -106,25 +109,30 @@ override def createTaskScheduler(sc: SparkContext, masterURL: String): TaskSched
 
 ```
 
-#####   client模式初始化  YarnScheduler &  YarnClientSchedulerBackend
-
-```
-##  YarnClientSchedulerBackend  <<  YarnSchedulerBackend  << CoarseGrainedSchedulerBackend
-1.  在CoarseGrainedSchedulerBackend中定义了driver 的通信对象driverEndpoint
-val driverEndpoint = rpcEnv.setupEndpoint(ENDPOINT_NAME, createDriverEndpoint())
-
-2.  YarnSchedulerBackend中实现了该方法，实现类为YarnDriverEndpoint
-override def createDriverEndpoint(properties: Seq[(String, String)]): DriverEndpoint = {
-    new YarnDriverEndpoint(rpcEnv, properties)
-  }
-
-
-
-```
-
+#####   client模式  YarnScheduler &  YarnClientSchedulerBackend
+* YarnClientSchedulerBackend 
+  * 核心功能
+    * sparkcontext初始化时向resourceManager提交程序，启动容器运行AM
+    * 启动线程MonitorThread监控yarn app 运行状态
+    * 通过YarnSchedulerEndpoint与AM通信
+      * 主要接受到来自AM的事件消息
+        * RegisterClusterManager -- 提交的am被成功提交到集群，返回am的通信地址
+        * RequestExecutors，KillExecutors，RemoveExecutor
+    * 通过DriverEndpoint与Executor通信
+      * RegisterExecutor事件将executor信息记录下来，保存在executorDataMap，下次根据executorId取出信息与executor通信
+      * ReviveOffers,整合可用资源，启动任务执行
+*   YarnScheduler 主要还是TaskSchedulerImpl的实现逻辑
+	*	借助SchedulerBackend将task发往executor执行
 
 
+![](../../../uml/sparkonyarn_client.jpg)
 
+
+
+#####  cluster 模式  YarnClusterScheduler &  YarnClusterSchedulerBackend
+
+* 基本同client
+* ![](../../../uml/sparkonyarn_cluster.jpg)
 
 
 
@@ -133,3 +141,4 @@ override def createDriverEndpoint(properties: Seq[(String, String)]): DriverEndp
 ####  参考
 
 * https://blog.csdn.net/wjl7813/article/details/79968423
+* https://www.cnblogs.com/yy3b2007com/p/10934090.html

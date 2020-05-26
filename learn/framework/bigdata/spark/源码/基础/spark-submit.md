@@ -8,7 +8,7 @@ submit(appArgs, uninitLog)
 ```
 
 ```scala
-SparkSubmit#submit
+//SparkSubmit#submit
 // 环境准备 
 // childMainClass: org.apache.spark.deploy.yarn.YarnClusterApplication
 val (childArgs, childClasspath, sparkConf, childMainClass) = prepareSubmitEnvironment(args)
@@ -109,4 +109,13 @@ private[deploy] class JavaMainApplication(klass: Class[_]) extends SparkApplicat
   }
 }
 ```
+
+#####   driver 执行内存与cpu资源配置 -- 具体参照org.apache.spark.deploy.yarn.Client解析
+
+* yarn  cluster的情况
+  * 通过spark.yarn.am.memory参数配置，运行在AM里面，默认512m
+  * cpu通过spark.yarn.am.cores，默认1
+* yarn client的情况
+  * 通过spark.driver.memory参数配置，在driver端，默认1g
+  * cpu通过spark.driver.cores配置，默认1
 

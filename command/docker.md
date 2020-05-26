@@ -65,6 +65,8 @@
                 *   redis-cli -c -p 7000 cluster nodes
 *   kafka集群
     *   docker pull 1nj0zren.mirror.aliyuncs.com/wurstmeister/kafka
+        *   export http_proxy=http://127.0.0.1:1081
+        *   export https_proxy=http://127.0.0.1:1081
         *   docker-compose up -d --scale=kafka=3
     
 
@@ -173,7 +175,7 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "300000" default
 
 
 # Dockerfile
-*   *   *   *   *   *   
+*   *   *   *   *   *
 
 # firfefox rongqi
 ```

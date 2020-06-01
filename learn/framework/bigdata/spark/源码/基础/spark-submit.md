@@ -119,3 +119,42 @@ private[deploy] class JavaMainApplication(klass: Class[_]) extends SparkApplicat
   * 通过spark.driver.memory参数配置，在driver端，默认1g
   * cpu通过spark.driver.cores配置，默认1
 
+#####  AM的不同
+
+* yarn  cluster的情况 ：org.apache.spark.deploy.yarn.ApplicationMaster
+* yarn client的情况 ：org.apache.spark.deploy.yarn.ExecutorLauncher
+  * 为client模式 自定义实现的ApplicationMaster,只是为了通过ps 或者 jps命令时可以区分部署模式是client
+
+
+
+#### ApplicationMaster 
+
+```
+// ClusterMode 的情况会执行runDriver（）
+// 启动单独的线程执行driver的用户代码SparkPi
+userClassThread = startUserApplication()
+
+
+// clientMode的情况执行runExecutorLauncher（）
+// 将application master注册到RM
+registerAM(hostname, -1, sparkConf, sparkConf.getOption("spark.driver.appUIAddress"))
+// 注册与driver的通信端口，主要用来监听事件
+val driverRef = rpcEnv.setupEndpointRef(
+      RpcAddress(driverHost, driverPort),
+      YarnSchedulerBackend.ENDPOINT_NAME)
+
+
+```
+
+
+
+
+
+
+
+
+
+####  参考
+
+* https://mallikarjuna_g.gitbooks.io/spark/yarn/
+* https://mallikarjuna_g.gitbooks.io/spark/yarn/spark-yarn-applicationmaster.html#ExecutorLauncher

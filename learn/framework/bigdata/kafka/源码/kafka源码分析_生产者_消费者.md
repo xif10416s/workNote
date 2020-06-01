@@ -1,85 +1,117 @@
-####  基础使用 -  V2.5 - [springboot集成测试代码地址](https://github.com/xif10416s/java_test)
+#### kafka - 2.5
 
-* [官方教程](https://docs.spring.io/spring-kafka/docs/current/reference/html/)
+#### [kafka测试代码地址](https://github.com/xif10416s/java_test)
 
-* pom 导入 spark boot kafka依赖
-  * ```
-    <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka</artifactId>
-                <version>2.5.0.RELEASE</version>
-            </dependency>
-    ```
-  
-* kafka配置信息：
-
-  * application.properties -- 配置项参考KafkaProperties类
-
-  * ```
-    // 基础配置
-    List<String> bootstrapServers: 消息代理broker地址与端口列表，127.0.0.1:9092,127.0.0.2:9092,127.0.0.3:9092
-    clientId：客户端id,指定后服务端记录日志
-    
-    // Producer配置
-    acks：0 直接返回， 1 leader接收成功就返回， -1 leader+follower 所有写入成功
-    batchSize：发送数据的批次大小，默认单位bytes，可以指定单位，设置太小会降低吞吐量
-    bufferMemory：producer缓存等待发送的消息内存大小
-    compressionType：压缩算法，支持 GZIP、Snappy和LZ4
-    keySerializer = StringSerializer.class; key的序列化方式，默认是string
-    valueSerializer = StringSerializer.class;值的序列化方式
-    retries：发送失败重试次数
-    
-    // consumer配置
-    autoCommitInterval：自动提交间隔，需要开启enable.auto.commit
-    autoOffsetReset：当没有初始化offset 或者 offset不存在时处理方式；earliest 设置offset到开始位置,处理之前的所有数据；latest 设置offset到最新消费位置，只消费新到来的消息；none 直接抛出异常
-    enableAutoCommit：是否允许自动提交offset
-    fetchMaxWait: 服务端最长等待时间，如果一直没有收集到最小拉取数量
-    fetchMinSize：服务端收集的最小数据量返回给客户端
-    groupId： consumer的groupid
-    heartbeatInterval:	与coordinator的心跳间隔时间
-    isolationLevel：事务中消息的隔离级别，默认为： IsolationLevel.READ_UNCOMMITTED;
-    keyDeserializer：key反序列化方式--与producer配套
-    valueDeserializer：value反序列化方式--与producer配套
-    Map<String, String> properties ： 用来直接配置客户端信息，参考kafka配置项
-    ```
-
-    *  consumer 并发数量配置
-  
-      * 在spring-kafka在运行时会启动两类线程，一类是Consumer线程，另一类是Listener线程。前者用来直接调用kafka-client的poll()方法获取消息，后者才是调用我们代码中标有@KafkaListener注解方法的线程。如果直接使用kafka-client的话，那么正常的写法是一个while循环，在循环里面调用poll()，然后处理消息，这在kafka broker看来就是一个Consumer。如果你想用多个Consumer, 除了多启动几个进程以外，也可以在一个进程使用多个线程执行此while()循环。spring-kafka就是这么干的。
-    
-        对于spring.kafka.listener.concurrency=3这个参数来说，它设置的是每个@KafkaListener的并发个数。每添加一个@KafkaListener, spring-kafka都会启动concurrency条Consumer线程来监听这些topic(注解可以指定监听多个topic), 当enable-auto-commit设为true时会直接在当前线程，即kafka consumer所在线程调用我们的@KafkaListener方法，如果设为false，则是将消息投放到阻塞队列中，另一边由Listener线程取出执行
+####  producer 
 
 
 
-##### spring kafka consumer KafkaListener
-
-* KafkaListener 处理类 KafkaListenerAnnotationBeanPostProcessor
-* Spring-Kafka中消息监听大致分为两种类型，一种是单条数据消费，一种是批量消费；两者的区别只是在于监听器一次性获取消息的数量。
-* kafka事务 -- 只需要配置producer的transactionIdPrefix
-
-
-
-
-
-
-
-
-
-
+#### consumer
+* Java客户端是围绕一个由poll() API驱动的事件循环设计的
+* java consumer 没有后台线程，所有io操作都依赖：poll ()
+  * 加入consumer group ，以及处理partitoin rebanances
+  * 定期发送心跳
+  * 当autocommit开启时，定期提交offset
+  * 给指定分区发送拉去请求并接受数据
+* 因为是单线程模型，当处理接收到的返回消息时是不能发送心跳
+  * 所以要保证消息可以及时处理
+* 线程不安全
+* 一个partition只能分配给一个consumer，一个consumer可以处理多个partition
+* 新版本的将kafka consumer的消费位置保存在了“__consumer_offsets”的内部topic
+  * 当出现消费者上线或者离线时，consumer group触发rebalance
 
 
 
+#####  消费者offset提交
+
+* 自动提交，开启enable.auto.commit, 设置提交间隔时间每次consumer poll()会检查是否需要提交
+* 手动提交：
+  * commitSync
+  * commitAsync
+
+
+
+####  kafka rebalance
+
+######  旧方案，zookeeper 监控与通知
+
+* 每个consumer监控 /consumers/[group_id]/ids 与 /brokers/ids ，注册一个watcher;当节点发生变化时触发rebalance
+* 问题：
+  * 羊群效应：一个被watch的节点变化，导致大量watcher通知需要被发送给客户端，期间会造成其他操作延迟
+  * 闹裂：每个consumer都是通过zookeeper中保存的元数据判断consumer group的状态，broker的状态，rebanlance的结果，由于zookeeper保证最终一致性，不同的consumer在同一时刻可能看到不一样的元数据
+
+###### 新方案
+
+* 将Consumer group分成多个子集，每个Consumer group子集 
+* 每个consumer group子集对应一个GroupCoordinator进行管理
+* 每个consumer group 在zookeeper的consumers目录有个文件，只有GroupCoordinator在zookeeper上添加了watcher
+  * 当触发rebalance时只有GroupCoordinator收到通知，开始处理rebalance
+* 分区的分配操作放在了consumer端
+
+
+
+#####  数据流
+
+###### 数据流可以分为四种不同的类型
+
+* producer与 transaction coordinator的交互
+
+  * initTransactions API向协调器注册一个transactional.id
+  * 当生产者将在事务中第一次将数据发送到分区时，首先要向协调器注册该分区。
+  * 当应用程序调用commitTransaction或abortTransaction时，会将请求发送到协调器以开始两阶段提交协议
+
+* #### coordinator 与 transaction log 交互
+
+  * 随着事务的进行，生产者发送上述请求以更新协调器上的事务状态
+  * 事务协调器将其拥有的每个事务的状态保存在内存中，并将该状态写入事务日志
+  * 事务协调器是唯一从事务日志中读取和写入的组件
+  * 如果给定的代理挂了，会选举新的协调器作事务日志分区的leader，并且它将从传入分区中读取消息，以为这些分区中的事务重建其内存中状态
+
+* producer写入消息到目标topic的partition
+
+  * 在协调器在事务中注册新分区之后，生产者像往常一样将数据发送到实际分区
+
+* 事务协调器与目标topic的partition交互
+
+  * 生产者发起提交（或中止）之后，协调器开始两阶段提交协议
+    * 在第一阶段，协调器将其内部状态更新为“ prepare_commit”，并在事务日志中更新此状态；
+      * 一旦完成，无论发生什么事情，事务都将得到保证
+    * 第二阶段，协调者将提交到主题分区的数据标记为事务已提交
+      * 标记对应producer是不可见的，主要给consumer根据不同的隔离等级（*read_committed* ）过滤数据用
+
+
+
+######  事务实战
+
+* 开启事务导致写入放大，额外的写操作：
+  * 对于每个事务，我们都有额外的RPC在协调器中注册分区；这些是批处理的，rpc数量比分区数少。
+  * 完成交易时，必须将一个交易标记写入参与交易的每个分区
+  * 我们将状态更改写入事务日志；包括对添加到事务中的每批分区的写入，“ prepare_commit”状态和“ complete_commit”状态
+* 消费者事务执行， 不会有明显的性能损坏
+  * 过滤掉属于取消事务的消息
+  * 过滤未提交的事务的消息
 
 
 
 
 
 
-####  参考
 
-* https://zhuanlan.zhihu.com/p/93445381
-* https://blog.csdn.net/neosmith/article/details/89477794
-* [spring-kafka](https://www.jianshu.com/c/0c9d83802b0c)
-* https://programming.vip/docs/kafka-initial-learning-kafka-transaction-support.html
-* [事务](https://www.zybuluo.com/tinadu/note/949867)
-* [官网](https://docs.spring.io/spring-kafka/docs/current/reference/html/#transaction-id-prefix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 参考
+
+* [demo文档](https://docs.confluent.io/current/clients/java.html)
+* [kafka事务confluent.io](https://www.confluent.io/blog/transactions-apache-kafka/)

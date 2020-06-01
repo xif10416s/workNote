@@ -15,7 +15,7 @@
   *	client模式：driver运行在客户端，application master只是用来从yarn申请资源
     *	适用于调试，能直接看到driver的日志，但是client断了，任务就结束了
     *	适用于交互与调试
-    *	![img](../../../images\yarn_client.png)
+    *	![img](../../../images/yarn_client.png)
 
 *	日志查看方式：
 
@@ -136,9 +136,42 @@ override def createTaskScheduler(sc: SparkContext, masterURL: String): TaskSched
 
 
 
+#####  Client#submitApplication
+
+![spark yarn ApplicationMaster main.png](https://mallikarjuna_g.gitbooks.io/spark/images/spark-yarn-ApplicationMaster-main.png)
+
+
+
+#####  yarn ResourceManager
+
+* 负责管理全局计算机资源分配给应用程序，资源包括：内存，cpu, 硬盘 ，网络等
+* 每一个Application就是一个yarn 客户端程序，由一个或多个任务组成
+* 每个运行的Application需要一段ApplicationMaster程序负责协调分配task在yarn集群上运行
+  * ApplicationMaster是启动后第一个运行的程序
+* 每个yarn的application 包含3部分：
+  * 应用程序客户端，这是程序在群集上运行的方式。
+  * ApplicationMaster 提供为application程序在yarn上申请资源的能力
+  * 一个或多个在yarn container上运行的task
+* 每个application在yarn集群上执行task的主要步骤：
+  * appplication 启动并与ResourceManager通信
+  * ResourceManager为application申请一个container容器
+  * ApplicationMaster在申请的第一个container中运行
+  * ApplicationMaster向ResourceManager申请运行application的task的container，并运行task
+    * task在各自container运行时会上报状态给AM
+  * 当所有的task运行结束时，ApplicationMaster退出。
+  * application客户端退出
+* RM,NM,AM一起协调工作，管理分配集群资源，确保各个程序的task可以正常运行。
+
+
+
+##### yarn NodeManager
+
+* 每个NodeManager负责跟踪本地资源，并且将资源配置同步给ResourceManager ,从而使群集的可用资源保持运行状态
+
 
 
 ####  参考
 
 * https://blog.csdn.net/wjl7813/article/details/79968423
 * https://www.cnblogs.com/yy3b2007com/p/10934090.html
+* https://mallikarjuna_g.gitbooks.io/spark/

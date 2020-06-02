@@ -61,14 +61,41 @@ consumer信息已经不由zk维护，kafka创建了一个__consumer_offsets的to
 
 
 
-#### kafka生产者客户端
+#### kafka 服务端通信模块
+
+#####  kafka 支持2中通信请求类型：
+
+* 数据类型（data-plane）：
+  * 来自客户端请求，或者其他broker的请求
+  * 线程模型：
+    * 每一个Listener一个accepter,负责处理新的连接
+    * 可以在KafkaConfig中listeners配置多个listener
+    * 每个accepter有N个process处理线程，负责各自selector的读取请求
+    * M个handler线程，负责将处理结果响应返回给process线程
+* 控制类型（control-plane):
+  * 处理来自controller的请求，可以通过control.plane.listener.name指定，如果没有指定，所有controller请求交给data-plane处理
+  * 线程模型：
+    * 1个acceptor线程处理新的连接
+    * 1个process线程处理selector监听的socket的读取请求
+    * 1个handler线程，处理结果响应反馈给process
 
 
 
+#####  process 与 handler 通信
 
+![image-20200531161604569](../images/process_handler.png)
+
+####  日志存储
+
+* kafak.log.Log
+  * segments: ConcurrentNavigableMap[java.lang.Long, LogSegment] = new ConcurrentSkipListMap[java.lang.Long, LogSegment]
+    * 使用调表结构对多个LogSegment的顺序组合
+  * TODO: read ,append
+* ![image-20200531165731236](../images/log_skip_segement.png)
 
 
 
 ####  参考
 
 * kafka技术内幕
+* apache kafka源码分析

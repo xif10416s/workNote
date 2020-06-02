@@ -101,5 +101,53 @@
 * bootstrap.servers:  服务端broker通信地址
 * group.id:  不设置为空，必须有值，表示一个group消费组
 * key.deserializer与 value.deserializer:  反序列化操作，与kafka producer相对应
+* fetch.min.bytes : poll 方法最小拉取的数据量，默认1B ,
+  * 小于该值时，会等待，提高值可以提高吞吐量，但是延迟可能增加
+* fetch.max.bytes: poll方法一次最多拉取的数据量，默认50m,
+* fetch.max.wait.ms:  配合fetch.min.bytes。等待超时时间，默认500ms
+* max.partition.fetch.bytes: 每个分区返回给Consumer的最大数据量，1m
+* max.poll.records: 一次拉取的最大消息数，默认500条
+* connection.max.idel.ms：多久后关闭限制的链接，默认9分钟
+* exclude.internal.topics:  是否公开内部topic -> __consumer_offsets  与 __transaction_state
+* receive.buffer.bytes 与 send.buffer.bytes ： 与服务端通信的socket缓冲大小
+* request.timeout.ms:  consumer等待请求的最大响应时间默认30000ms
+* metadata.max.age.ms : 元数据的过期时间，默认5分钟，如果元数据在5分钟内没有更新，会被强制更新
+* isolation.level : 事务的隔离级别
+  * read_uncommitted --可以读取producer未提交事务的数据， HW处位置
+  * read_commited -- 只能读取producer提交事务的数据
+
 * 推荐使用ConsumerConfig配置，避免写错
 
+
+
+#####  起始消费位置
+
+* 适用场景：
+  * 新的消费组建立，没有可查找的消费位移
+  * 消费组订阅了新的主体，也没有可查找的消费位移
+  * 消费组的位移信息过期被删除后，也没有可查找的消费位移
+* 在没有可查找的位移时位移指定配置：auto.offset.reset
+  * latest :  从最新的位置开始消费，只消费新来的数据
+  * earliest : 从最早的位置开始消费，消费之前所有的数据
+  * none :  抛出异常
+* 通过seek方法指定消费的起始位置，在poll执行方法里面执行，消费历史数据
+  * 可以配合数据库，将offset保存到db
+* offsetsForTImes, 通过timestamp 来指定分区的位置
+
+
+
+#####  在均衡
+
+* 分区的所属权从一个消费者转移到另一个消费者，高可用，高伸缩性
+* 再均衡期间，消费组不可用
+* 如果消费组消费了部分数据，未提交发生再均衡，可能会重复消费
+
+
+
+####  主题与分区
+
+* 主题是对于消息的分类，每个主题可以再细分成一个或者多个分区
+  * 分区可以为kafka提供可伸缩性，和水平扩展的能力
+  * 每个分区可以有多个副本，小于broker数量，提供数据冗余，提高可靠性
+* 每个分区在物理结构上对应一个文件目录，每个分区的日志安数据量分段为多个logSegment，每个分段包含：日志文件，索引文件，快照文件等
+* 

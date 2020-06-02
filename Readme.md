@@ -52,7 +52,7 @@
 
 #####   cdh 6.X 集群安装
 *   [docker测试环境安装](learn/framework/bigdata/集群安装/cdh/ClusterInstall.md)
-*   [阿里云服务器安装]
+*   [阿里云服务器安装](learn/framework/bigdata/集群安装/cdh/cdh阿里云安装.md)
 
 
 

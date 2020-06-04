@@ -89,7 +89,7 @@ tar xf mysql-connector-java-5.1.46.tar.gz
 mkdir -p /usr/share/java/
 cd mysql-connector-java-5.1.46
 cp mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
-```	
+```
 
 
 ###  添加mysql 配置(namenode节点）
@@ -112,11 +112,13 @@ innodb_flush_method = O_DIRECT
 *	初始化数据库
 	*	 /usr/bin/mysql_secure_installation
 		*	问题：ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+			
 			*	/etc/my.cnf 配置 [mysqld]下 添加 skip-grant-tables
 		*	出问题看日志： tail -n500 /var/log/mariadb/mariadb.log
 		*	问题：Error: log file ./ib_logfile0 is of different size 0 5242880 bytes
+			
 			*	# innodb_log_file_size  = 256M 注释
-	*	账号密码：root/!dtmind&123
+	*	账号密码：root/root123456
 
 ###  使用root登陆数据库，创建以下数据库和账号。
 *	mysql -u root -p
@@ -144,7 +146,7 @@ GRANT ALL ON oozie.* TO 'oozie'@'%' IDENTIFIED BY '!dtmind&123';
 
 flush privileges;
 ```
- 
+
 ###  cdh manager 安装
 ###  文件拷贝
 *	namenode : /home/datamind/cdh

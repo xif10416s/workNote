@@ -175,7 +175,172 @@
 
 
 
-######  日志索引
+#####  日志索引
+
+######   每个日志分段文件对应两个索引文件
+
+* .index 文件（ 偏移量索引文件） ：  建立消息偏移量 offset 到 物理地址之间的映射关系，方便快速定位消息所在的物理文件位置
+* .timestamp(时间戳索引文件) ： 根据指定的时间戳来查找对应的偏移量信息
+
+######  索引存储
+
+* kafka 索引文件以稀疏索引（spare index） 方式构造消息的索引，不保证每个消息在索引文件中都有对应的索引项
+* 每当写入一定量的消息（有broker的log.index.interval.bytes 默认4k) ,  偏移量索引文件和时间戳索引文件分别增加一个偏移索引项和时间戳索引项，调整log.index.interval.bytes大小可以控制索引项的密度
+* 稀疏索引通过MappedByteBuffer将索引文件映射到内存中，加快查询速度
+  * 使用二分查找一个范围，要找到对于物理文件位置还炫耀根据偏移索引文件再次定位
+  * 稀疏索引 方式 在磁盘空间，内存空间，查找时间的折中
+
+###### 索引文件切分条件
+
+* 当前日志分段文件超过broker配置的log.segment.bytes 值默认1gb
+* 当前日志分段中消息的最大时间戳与当前系统的时间戳的差值大于log.roll.ms或log.roll.hours参数配置的值默认168 即7天
+* 偏移量索引文件或时间戳索引文件的大小达到broker的log.index.size.max.bytes 默认10mb
 
 
 
+######  日志清理策略
+
+* 日志删除 ： 按一定的保留策略直接删除不符合条件的日志分段
+* 日志压缩：针对每个消息的key整合，保留相同key的最后一个版本
+  * log compaction (压紧）:  是针对key的合并，没有算法
+  * message compression (压缩）: 消息压缩，kafka支持gzip, snappy， lz4 
+* 每一个日志目录下有一个名为“cleaner-offset-checkpoint" 文件： 清理检查点文件，用来记录每个主题的每个分区中已经清理的偏移量
+  * 通过清理检查点，将log分成两个部分clean部分 + dirty部分
+  * 清理的同时，客户端可以读取日志中的消息
+  * ![image-20200609141905500](../images/clean_point.png)
+
+
+
+####  磁盘存储
+
+#####  磁盘读写性能
+
+* 6快，7200r/min 的 raid-5 阵列的磁盘族，顺序写入速度可以达到600mb/s
+* 操作系统对于顺序读写优化，预读（read-ahead, 提前将一个比较大的磁盘块读入内存）
+* 后写（write-behind,将很多小的逻辑写操作合并起来组成一个大的物理写操作)
+
+#####  页缓存
+
+* 操作系统实现的一种主要的磁盘缓存，减少对磁盘的i/o的操作
+  * 把磁盘中的数据缓存到内存中，把对磁盘的访问变成对内存的访问
+
+
+
+#####  零拷贝
+
+* 将数据直接从磁盘文件复制到网卡设备中，避免用户态与核心态上下文切换，以及中间复制数据
+* 底层通过linux   sendfile方法实现，java 为 FileChannel.transferTo()
+
+
+
+
+
+####  kafka服务端
+
+######  时间轮 TimingWheel
+
+* kafka存在大量的延时操作，如：延时生成，延时拉取，延时删除
+* 采用时间轮--一个存储定时任务的环形队列
+  * 底层采用数组，每一个元素可以放一个定时任务列表TimerTaskList,
+    * TimerTaskList为一个环形的双向链表，每一个数据项为定时任务想，为实际执行的任务
+  * 时间轮结构
+    * <img src="../images/time_wheel.png" alt="image-20200609165625710" style="zoom:50%;" />
+
+
+
+######  控制器
+
+* kafka集群有一个或多个broker ,  其中一个broker会被选举为控制器（kafka controller) ,负责管理整个集群中所有分区和副本的状态
+  * 当某个分区leader副本出现故障时，有控制器负责为该分区选举新的leader副本
+  * 当检测到某个分区的ISR集合发生变化时，由控制器负责通知所有broker更新元数据信息
+* kafka控制器选举工作以来zookeeper，成功竞选为控制器的broker会在zookeeper中创建/controller的临时节点
+* kafka 作为Controller控制器的额外工作：
+  * 监听分区相关的变化：
+    *  Zookeeper 中 /admin/reassign_partitions节点注册PartitionReassignmentHandler,处理分区重分配的动作
+    * zookeeper 的/ isr_change_notification节点注册IsrChangeNotificetionHandler，处理ISR集合变更的动作
+  * 监听主题相关的变化
+    * zookeeper中/brokers/topics 节点添加TopicChangehandler ,处理主题增减的变化
+  * 监听broker相关的变化
+    * 为zookeeper中的/brokers/ids 添加BrokerChangeHandler，处理broker增减变化
+  * 监听主题中的分区分配变化
+  * 启动并管理分区状态机和副本状态机
+  * 更新集群的元数据信息
+
+
+
+######  kafka服务优雅关闭
+
+* 脚本工具 kafka-server-stop.sh 
+  * 可能ps命令出错，导致无法执行 ， 使用 ps ax 
+* 手动关闭
+  * 获取kafka 服务进程号PIDS
+  * kill -s  TERM  $PIDS    或 kill  -15 
+
+
+
+####  深入客户端
+
+#####  分区分配策略 --  partition.assignment.strategy
+
+* RangeAssignor 默认 -- 按照消费者总数和分区总数进行整除运算获取一个跨度，然后分区按照跨度进行平均分配，保证分区尽可能均匀地分配给所有的消费者
+* RoundRobinAssignor -- 将消费组内所有消费者及消费者订阅的所有主题的分区按照字典序排序，然后通过轮询方式逐个将分区依次分配个每个消费者，
+* StickyAssignor -- 
+
+
+
+#####  消费者协调器和组协调器
+
+* 消费组分成多个子集，每个消费组的子集在服务端对应一个GroupCoordinator对其进行管理
+  * ​	GroupCoordinator是kafka服务端中用于管理消费的组件
+* 消费者客户端中的ConsumerCoordinator组件负责与GroupCorrdinator进行交互
+
+
+
+######  再均衡步骤
+
+* 第一阶段（FIND_COORDINATOR)
+  * 找到所属消费组对应的GroupCoordinator所在的broker,并创建于该broker的相互通信的网络连接
+    * 向集群中的负载最小的节点发送**FindCoordinatorRequest** 来找到对应的GroupCoordinator
+* 第二阶段（JOIN_GROUP)
+  * 在成功找到消费组所对应的GroupCoordinator之后就进入加入消费组的阶段，消费者向GroupCorrdinator发送**JoinGroupRequest**
+  * GroupCorrdinator为消费组内的消费者选举一个消费者组的leader
+  * 选举分区分配策略，分配好每个消费者消费哪些分区
+* 第三阶段（SYNC_GROUP)
+  * leader消费者根据选定的分区分配策略实施具体分区分配，然后将分配的方案同步给各个消费者	
+    * 同步分配方案通过GroupCoordinator扶着转发同步分配方案
+    * 各个消费会向GroupCoordinator 发送**SyncGroupRequest**请求来同步分配方案
+* 第四阶段（HEARTBEAT）
+  * 进入这个阶段开始正常工作状态，消费这通过向GroupCorrdinator发送心跳维持消费组的从属关系
+
+
+
+###### 消费组元数据信息__consumer_offsets
+
+
+
+
+
+####  事务
+
+#####  流式应用 consumer-transform-produce
+
+* 消费者消费消息，转换消息，然后发送消息的过程，消费和生产并存
+* 通过提供唯一transactionId
+  * 显示设置方式：properties.put("transactional.id","transactionId")
+* transactionalId 与 PID一一对应
+
+
+
+#####  kafkaproducer 5个事务方法
+
+* initTransactions()   :  初始化事务，执行的前提是已经配置了transactionalId
+* beginTransaction(): 开启事务
+* sendOffsetsTOTransaction():  为消费者提供在事务内的位移提交操作
+* commitTransaction() : 提交事务
+* abortTransaction(): 回滚事务
+
+
+
+#####  consumer-transform-produce 流程
+
+![image-20200612092414774](../images/trans_consumer_transform_producer.png)

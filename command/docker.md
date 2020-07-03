@@ -31,8 +31,8 @@
 *   ifconfig eth1:0 192.168.99.10 netmask 255.255.255.0 up
 
 ### 动态添加ip映射
-*   /var/lib/docker/container/XXXXXX/hostconfig.json 
-*   /var/lib/docker/container/XXXXXX/config.v2.json 
+*   /var/lib/docker/containers/XXXXXX/hostconfig.json 
+*   /var/lib/docker/containers/XXXXXX/config.v2.json 
 *   ,"8081/tcp":[{"HostIp":"","HostPort":"28081"}]
 *   docker-machine restart
 

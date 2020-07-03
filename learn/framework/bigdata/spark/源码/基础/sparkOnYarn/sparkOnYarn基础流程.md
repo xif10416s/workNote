@@ -15,7 +15,7 @@
   *	client模式：driver运行在客户端，application master只是用来从yarn申请资源
     *	适用于调试，能直接看到driver的日志，但是client断了，任务就结束了
     *	适用于交互与调试
-    *	![img](../../../images\yarn_client.png)
+    *	![img](../../../images/yarn_client.png)
 
 *	日志查看方式：
 
@@ -66,6 +66,9 @@ $ ./bin/spark-submit --class my.main.Class \
 
 ####  sparkcontext初始化过程--on yarn
 
+* deploy-mode为client的情况是在driver端执行目标 my.main.Class ， sparkContext的初始化也在driver端
+* deploy-mode为cluster的情况，会通过yarnClient提交给ResourceManager,  启动一个Container运行AM,在AM中执行my.main.Class（driver 程序），sparkContext的初始化在Conainer中
+
 ```
 1. driver端 初始化 sparkcontext, 会根据master配置适用不同的SchedulerBackend实现类, 以及taskScheduler的实现类
 val (sched, ts) = SparkContext.createTaskScheduler(this, master, deployMode)
@@ -106,30 +109,69 @@ override def createTaskScheduler(sc: SparkContext, masterURL: String): TaskSched
 
 ```
 
-#####   client模式初始化  YarnScheduler &  YarnClientSchedulerBackend
-
-```
-##  YarnClientSchedulerBackend  <<  YarnSchedulerBackend  << CoarseGrainedSchedulerBackend
-1.  在CoarseGrainedSchedulerBackend中定义了driver 的通信对象driverEndpoint
-val driverEndpoint = rpcEnv.setupEndpoint(ENDPOINT_NAME, createDriverEndpoint())
-
-2.  YarnSchedulerBackend中实现了该方法，实现类为YarnDriverEndpoint
-override def createDriverEndpoint(properties: Seq[(String, String)]): DriverEndpoint = {
-    new YarnDriverEndpoint(rpcEnv, properties)
-  }
-
-
-
-```
-
+#####   client模式  YarnScheduler &  YarnClientSchedulerBackend
+* YarnClientSchedulerBackend 
+  * 核心功能
+    * sparkcontext初始化时向resourceManager提交程序，启动容器运行AM
+    * 启动线程MonitorThread监控yarn app 运行状态
+    * 通过YarnSchedulerEndpoint与AM通信
+      * 主要接受到来自AM的事件消息
+        * RegisterClusterManager -- 提交的am被成功提交到集群，返回am的通信地址
+        * RequestExecutors，KillExecutors，RemoveExecutor
+    * 通过DriverEndpoint与Executor通信
+      * RegisterExecutor事件将executor信息记录下来，保存在executorDataMap，下次根据executorId取出信息与executor通信
+      * ReviveOffers,整合可用资源，启动任务执行
+*   YarnScheduler 主要还是TaskSchedulerImpl的实现逻辑
+	*	借助SchedulerBackend将task发往executor执行
 
 
+![](../../../uml/sparkonyarn_client.jpg)
 
 
 
+#####  cluster 模式  YarnClusterScheduler &  YarnClusterSchedulerBackend
+
+* 基本同client
+* ![](../../../uml/sparkonyarn_cluster.jpg)
+
+
+
+#####  Client#submitApplication
+
+![spark yarn ApplicationMaster main.png](https://mallikarjuna_g.gitbooks.io/spark/images/spark-yarn-ApplicationMaster-main.png)
+
+
+
+#####  yarn ResourceManager
+
+* 负责管理全局计算机资源分配给应用程序，资源包括：内存，cpu, 硬盘 ，网络等
+* 每一个Application就是一个yarn 客户端程序，由一个或多个任务组成
+* 每个运行的Application需要一段ApplicationMaster程序负责协调分配task在yarn集群上运行
+  * ApplicationMaster是启动后第一个运行的程序
+* 每个yarn的application 包含3部分：
+  * 应用程序客户端，这是程序在群集上运行的方式。
+  * ApplicationMaster 提供为application程序在yarn上申请资源的能力
+  * 一个或多个在yarn container上运行的task
+* 每个application在yarn集群上执行task的主要步骤：
+  * appplication 启动并与ResourceManager通信
+  * ResourceManager为application申请一个container容器
+  * ApplicationMaster在申请的第一个container中运行
+  * ApplicationMaster向ResourceManager申请运行application的task的container，并运行task
+    * task在各自container运行时会上报状态给AM
+  * 当所有的task运行结束时，ApplicationMaster退出。
+  * application客户端退出
+* RM,NM,AM一起协调工作，管理分配集群资源，确保各个程序的task可以正常运行。
+
+
+
+##### yarn NodeManager
+
+* 每个NodeManager负责跟踪本地资源，并且将资源配置同步给ResourceManager ,从而使群集的可用资源保持运行状态
 
 
 
 ####  参考
 
 * https://blog.csdn.net/wjl7813/article/details/79968423
+* https://www.cnblogs.com/yy3b2007com/p/10934090.html
+* https://mallikarjuna_g.gitbooks.io/spark/

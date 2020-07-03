@@ -65,7 +65,12 @@
                 *   redis-cli -c -p 7000 cluster nodes
 *   kafka集群
     *   docker pull 1nj0zren.mirror.aliyuncs.com/wurstmeister/kafka
+        *   export http_proxy=http://127.0.0.1:1081
+        *   export https_proxy=http://127.0.0.1:1081
         *   docker-compose up -d --scale=kafka=3
+*   mysql
+    *   docker pull 1nj0zren.mirror.aliyuncs.com/mysql/mysql-server:5.7
+    *   docker run --name first-mysql -p 3306:3306 -e MYSQL\_ROOT\_PASSWORD=123456 -d 1nj0zren.mirror.aliyuncs.com/mysql/mysql-server:5.7
     
 
 
@@ -173,7 +178,7 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "300000" default
 
 
 # Dockerfile
-*   *   *   *   *   *   
+*   *   *   *   *   *
 
 # firfefox rongqi
 ```

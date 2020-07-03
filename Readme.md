@@ -7,6 +7,9 @@
         *   [1-SparkContext-初始化-Standalone.md](learn/framework/bigdata/spark/源码/基础/1-SparkContext-初始化-Standalone.md)
         *   [2-spark任务处理流程-Standalone.md](learn/framework/bigdata/spark/源码/基础/2-spark任务处理流程-Standalone.md)
         *   [3-spark_shuffle过程-Standalone.md](learn/framework/bigdata/spark/源码/基础/3-spark_shuffle过程-Standalone.md)
+        *   spark on yarn
+            *   [spark on yarn submit](learn/framework/bigdata/spark/源码/基础/spark-submit.md)
+            *   [sparkOnyarn基础流程](learn/framework/bigdata/spark/源码/基础/sparkOnYarn/sparkOnYarn基础流程.md)
     +   Spark SQL, DataFrames and Datasets 
         *   [0-SparkSql_base.md](learn/framework/bigdata/spark/源码/sql/0-SparkSql_base.md)  
         *   [1-SparkSql-基本流程.md](learn/framework/bigdata/spark/源码/sql/1-SparkSql-基本流程.md)    
@@ -49,7 +52,7 @@
 
 #####   cdh 6.X 集群安装
 *   [docker测试环境安装](learn/framework/bigdata/集群安装/cdh/ClusterInstall.md)
-*   [阿里云服务器安装]
+*   [阿里云服务器安装](learn/framework/bigdata/集群安装/cdh/cdh阿里云安装.md)
 
 
 

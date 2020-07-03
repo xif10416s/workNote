@@ -34,8 +34,10 @@
         +    a column-oriented binary file format
         +    highly efficient for the types of large-scale queries
 *   表设计
+	
 	*	分区
 *    spark sql & hive 
+    
     -    https://www.cnblogs.com/longjshz/p/5414051.html
 *   内部表 & 外部表
     -   CREATE  TABLE  & CREATE EXTERNAL TABLE 
@@ -140,3 +142,12 @@ hiveContext.sql("insert into default.test_orc3 partition(dt='2017-12-02') select
 sdf.write.mode(SaveMode.Append).insertInto("default.test_orc")
 ```
 
+
+
+
+
+
+
+####  参考
+
+* [hive优化](https://mp.weixin.qq.com/s?__biz=MzU3NTE2NzAxNQ==&mid=2247486104&idx=1&sn=9500865eb98dac5a9fd3953c46d34492&chksm=fd2605d0ca518cc61b3e334f3fbfdfcf963ab8f0ff56d4f4ff6cea970e59e432132cf1d145d8&scene=126&sessionid=1593305628&key=4c1fdc1b8b36e6a467dcc272fd14dad14b72f9cdd6f8f9e6c37a1a522412f4dcac2a52f5cd30fbf55abbfbfff7ae54626668a0547407d5f7e6337fa7c5d56f1b343dd7718cf01c43713033e7d57edda9&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=Ac7eVNJ9u8A%2Bv4DSpV89kqY%3D&pass_ticket=LdGjgwSURpwO%2B4cAswh2%2FSfXs0FDIVu7ZeivJ2TFKRwPMoUI276O%2BAcVtEdRAjLN)

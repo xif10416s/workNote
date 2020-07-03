@@ -1,5 +1,7 @@
 #### [Apache Spark 3.0 动态分区裁剪](https://www.iteblog.com/archives/8590.html)
 
+####  从数据源读取数据的时候尽可能过滤不必要的数据，减少数据读取，网络传输量
+
 #### 静态分区裁剪（Static Partition Pruning）
 
 * spark sql 在执行查询的时候根据过滤条件实现谓词下推，分区剪裁，跳过不必要的分区，减少读取数据量

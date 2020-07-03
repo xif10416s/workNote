@@ -1,4 +1,4 @@
-##   Spark SQL 自适应执行优化引擎 
+##    Spark SQL 自适应执行优化引擎 
 
 ###  背景
 *	Adaptive Execution 将可以根据执行过程中的中间数据优化后续执行，从而提高整体执行效率。核心在于两点
@@ -7,15 +7,32 @@
 *	spark 2.3 开始试验功能
 *	spark 3.0 正式发布 自适应查询执行（Adaptive Query Execution）
 
+
+
+#### 功能
+
+* 动态合并shuffle 分区
+* 动态选择join策略
+* 动态优化数据倾斜join
+
+
+
 ###  现状与挑战
 *	如何设置合适的shuffle partition数量？
 	*	在Spark SQL中， shufflepartition数可以通过参数spark.sql.shuffle.partition来设置，默认值是200。
 	*	如果partition太小，单个任务处理的数据量会越大，在内存有限的情况，就会写文件，降低性能，还会oom
 	*   如果partition太大，每个处理任务数据量很小，很快结束，导致spark调度负担变大，中间临时文件多
+	*   开启AOE后，会合并少量数据的分区为一个分区
 *	spark sql 最佳执行计划
-	* 	Spark SQL的Catalyst优化器的核心工作就是选择最佳的执行计划,主要依靠：
-		*	早起基于规则的优化器RBO
-		*	spark2.2 加入基于代价的优化CBO 
+	*	spark join 策略
+		*	broadcast hash join :  性能最高，要求join的其中一张表数据量不大，如小于10M
+		  *	存在一些无法估算的情况：
+		    *	存在比较复杂的过滤器
+		    *	连接关系是一系列复杂的运算符，而不仅仅是扫描
+		*	sort merge join:  性能差
+	*	Spark SQL的Catalyst优化器的核心工作就是选择最佳的执行计划,主要依靠：
+	  *	早起基于规则的优化器RBO
+	  *	spark2.2 加入基于代价的优化CBO 
 	*	执行计划在计划阶段确定后，不会改变，如果能够获取运行时信息，就可能得到一个更加的执行计划
 *	数据倾斜如何处理
 	*	数据倾斜是指某一个partition的数据量远远大于其它partition的数据，导致个别任务的运行时间远远大于其它任务，因此拖累了整个SQL的运行时间。

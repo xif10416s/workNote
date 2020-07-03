@@ -82,7 +82,7 @@ tar xf mysql-connector-java-5.1.46.tar.gz
 mkdir -p /usr/share/java/
 cd mysql-connector-java-5.1.46
 cp mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
-```	
+```
 *  commit 基础image , node 节点可用
 	*	docker commit f2a95320beb3   centos_base:ssh-jdk	
 	*	测试：docker run -it --privileged=true -p 28001:22 centos_base:ssh-jdk   sh -c   /usr/sbin/init  '/etc/rc.local;'
@@ -112,16 +112,18 @@ innodb_flush_method = O_DIRECT
 *	初始化数据库
 	*	 /usr/bin/mysql_secure_installation
 		*	问题：ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+			
 			*	/etc/my.cnf 配置 [mysqld]下 添加 skip-grant-tables
 		*	出问题看日志： tail -n500 /var/log/mariadb/mariadb.log
 		*	问题：Error: log file ./ib_logfile0 is of different size 0 5242880 bytes
+			
 			*	# innodb_log_file_size  = 256M 注释
 
 ###  使用root登陆数据库，创建以下数据库和账号。
 *	mysql -u root -p
 *   flush privileges;
 *	初始化数据 https://www.cloudera.com/documentation/enterprise/latest/topics/install_cm_mariadb.html ，http://blog.51cto.com/wzlinux/2321433
- 
+
 ###  cdh manager 安装
 #### 安装 CM Server 和 Agent
 *	scp cloudera-manager.repo root@172.17.0.2:/home
@@ -190,7 +192,7 @@ innodb_flush_method = O_DIRECT
 172.17.0.3      slave1
 172.17.0.4      slave2
 172.17.0.5      slave3
-```	
+```
 
 ## 通过网页安装
 *	选择CDH版本这里会显示你放在/opt/cloudera/parcel-repo/下的parcel包，若未显示

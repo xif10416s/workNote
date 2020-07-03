@@ -44,6 +44,9 @@
 	*	 在fork之后exec之前两个进程用的是相同的物理空间（内存区），子进程的代码段、数据段、堆栈都是指向父进程的物理空间，也就是说，两者的虚拟空间不同，但其对应的物理空间是同一个
 	*	写时复制技术：内核只为新生成的子进程创建虚拟空间结构，它们来复制于父进程的虚拟究竟结构，但是不为这些段分配物理内存，它们共享父进程的物理空间，当父子进程中有更改相应段的行为发生时，再为子进程相应的段分配物理空间。
 *	资源的复制只有在需要写入的时候才进行，在此之前，只是以只读方式共享
+*	copyonwritefork()出来的子进程共享主进程的物理空间，当主子进程有内存写入操作时，read-only内存页发生中断，将触发的异常的内存页复制一份(其余的页还是共享主进程的)。
+*	对于大多数的 Redis 服务或者数据库，写请求往往都是远小于读请求的，所以使用fork()加上写时拷贝这一机制能够带来非常好的性能
+*	主进程每次收到bgsave命令需要fork()子进程之前都会判断是否存在子进程了，若存在也会忽略掉这次bgsave请求。若不存在我会fork()出子进程进行工作。
 
 #### redis使用场景
 *	String 
@@ -431,6 +434,35 @@
   * ReactiveRedisTemplate
   
 
+```
+# 主要配置
+##  基础配置 BaseConfig
+// 最大空闲时间，当连接池的连接空闲时间超过配置时间，并且当前连接数大于连接池最小空闲连接数，连接将被关闭并移除，单位毫秒
+idleConnectionTimeout = 10000;
+// 连接redis服务的超时时间
+connectTimeout = 10000;
+// redis 服务响应超时
+timeout = 3000;
+// 重试次数
+retryAttempts = 3;
+// 重试间隔
+retryInterval = 1500;
+// 服务器授权密码，账号
+String password，username
+
+## 主从集群配置  BaseMasterSlaveServersConfig
+// slave 最小核心线程数据
+slaveConnectionMinimumIdleSize = 24; 
+// slave 最大线程数
+slaveConnectionPoolSize = 64;
+
+##  ClusterServersConfig
+// 集群列表
+nodeAddresses
+```
+
+
+
 
 
 #### Lettuce --TODO
@@ -459,4 +491,5 @@
 *	https://github.com/redisson/redisson/wiki/目录
 *	https://github.com/redisson/redisson/wiki/%E7%9B%AE%E5%BD%95
 *	https://mp.weixin.qq.com/s?__biz=MzA5MTc0NTMwNQ==&mid=2650719859&idx=1&sn=b55cd8838329737c3056681a4ed1e430&chksm=887ddb05bf0a52138f027cf0b20a8b3a80c6f256baaf290b121f6ac74396169355ae9e083bbd&scene=126&sessionid=1588727501&key=99ef7414318fbe187906b9d55955ae67700442af3a87c5d6ae82c4d182176b0f85cd13de5d5439fceab6b2ba4bc6b91782b12b149cd872059c18184f02e017fbd2b1621f9606ff8878ecf4c18e0e49c2&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10&version=62080079&lang=zh_CN&exportkey=AfrwBXccwRBcndnocCkYjcE%3D&pass_ticket=LPSbkDJNYtM03WvFhUCwCDhlPxk2J8JL7vu0h%2FKRQNaVG30YE5Z7z3K%2FQ4ckpqvB
+*	[阿里云 Redis 开发规范 ](https://mp.weixin.qq.com/s?__biz=MzU2Njg3OTU1Mg==&mid=2247485338&idx=1&sn=06d6e30281025f4cfbc1e062046fa06a&chksm=fca4f3b5cbd37aa3b0a1d116291d0bfbeae1266e5842c3fbc93e6b2f13169e77f89f80393894&scene=126&sessionid=1589935173&key=305519977f03d30e589f637f508f3fb18d0e61578a2f4bc311ef8ec7f6586e794f7a81c554d3be8a709ec073009e95f309bfd9b6a5847f2b938453d4bc5fb1bbe9074fbe72e9f50f1bacf7e533bb827e&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=ATPN2bwJFc0mMk0FE82FQys%3D&pass_ticket=koMI0bdRosp%2B2wnIxAP%2F2esZhMGGhgQ91DBvxEIxR%2Fqd9g%2Brc9TFEYpoxMC5dfcB)
 

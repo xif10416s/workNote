@@ -4,3 +4,20 @@ git config --global https.proxy 'socks5://127.0.0.1:1080'
 
 #  git 初始化推送到远程
 *	
+
+
+
+```
+error: RPC failed; curl 56 OpenSSL SSL_read: SSL_ERROR_SYSCALL, errno 10054
+```
+
+git config --global pack.windowMemory "100m"
+git config --global pack.SizeLimit "100m" 
+git config --global pack.threads "1"
+git config --global pack.window "0"
+
+
+
+游戏学git
+
+https://learngitbranching.js.org/?locale=zh_CN

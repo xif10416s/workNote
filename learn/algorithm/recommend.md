@@ -110,3 +110,9 @@
 *   http://www.lxway.com/4050452466.htm
 
 
+
+####  推荐系统论文
+
+* https://github.com/scnu-dil/awesome-RecSys
+
+

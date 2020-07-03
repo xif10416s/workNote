@@ -13,10 +13,15 @@
     * hadoop jar -Dmapreduce.job.queuename=etl xxx.jar  
   * spark 通过 spark.yarn.queue指定
     * spark-shell  --conf.yarn.queue=test
+*  <img src="./images/cdh_before_config.png" style="zoom: 50%;" />
 
 
 
 #####  配置管理入口（**Clusters** > **Cluster name** > **Dynamic Resource Pool Configuration**）
+
+<img src="./images/cdh_main.png" style="zoom: 50%;" />
+
+
 
 
 
@@ -80,6 +85,13 @@
   * 根据不同的时间段配置给不同资源池配置不同的资源比例
 
 
+
+
+
+####  确认资源池
+
+* http://192.168.99.100:28088/cluster/scheduler
+* <img src="./images/schduler.png" style="zoom: 50%;" />
 
 
 

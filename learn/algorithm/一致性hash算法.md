@@ -7,6 +7,13 @@
 * 当节点数变化时（新增节点，节点出错），需要全部重新计算迁移
 
   
+  
+#####  一致性hash算法提出了在动态变化的Cache环境中，判定哈希算法好坏的四个定义：
+*	**平衡性(Balance)** :  均匀分布，平衡性是指哈希的结果能够尽可能分布到所有的缓冲中去，这样可以使得所有的缓冲空间都得到利用。
+*	**单调性(Monotonicity)**：节点发生变化时，尽量不影响原有数据的保存位置，尽可能减少因为节点变化导致原有数据的存储位置的变化。
+*	**分散性(Spread)：**在分布式环境中，终端有可能看不到所有的缓冲，而是只能看到其中的一部分。
+*	**负载(Load)：**
+
 
 ##### 原理
 
@@ -65,3 +72,4 @@
 ##  参考
 
 * https://blog.csdn.net/qq_34672033/article/details/88916789
+* https://mp.weixin.qq.com/s?__biz=MzIwMzY1OTU1NQ==&mid=2247492222&idx=2&sn=ab768f63c0a2b6942ab8c4e9a0657abc&chksm=96cea232a1b92b24b9b9df2f8c1ca8a3654263b4e55521ba0d93eb73784fb1a5401c9246b19e&scene=126&sessionid=1593997629&key=6f737cad8e87f27e431708af32247feb2e5ccebdfff74e83c51f2c3965dc4a41d69b104dc8a0aaa5b35101cbfba2b6d59bdf08f7fabb9e532c5721d7402737217faa6f1da5728f939031eb4ce4c91891&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=AQ7n6VfYCkdpJsoam8btbRo%3D&pass_ticket=sevNJm0url4lVbyUnV2k6GyH5CYs9swmcBVVF3Bsm5L7SvnlqRLaz8jUj3pGRvft

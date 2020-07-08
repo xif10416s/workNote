@@ -1,4 +1,5 @@
-# join 操作
+# join 操作 --TODO
+
 ## join 笛卡尔积
 ### 代码流程
 ```
@@ -218,3 +219,10 @@ BroadcastHashJoinExec#doExecute
 
 
 
+
+
+
+
+####  参考
+
+* https://mp.weixin.qq.com/s?__biz=MzA5MTc0NTMwNQ==&mid=2650721379&idx=1&sn=b0ce28c57d30899c7666652ecd205a30&chksm=887dd115bf0a58037c31b078064cfb761765b5aa8c249ac0e53b215f81c99c24ef99bd6ecf48&scene=126&sessionid=1594006007&key=6f737cad8e87f27ec7523e8703c3cdbe7b9832e3eba1e46fd461fe707a35411e2efe77c015ed2d57ef3ff04208ae675e78f36b0ced73509fefb2521f42a94fa08bcfafddf4513ccc10bea9b90186c043&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=AXnW7P5x6dmGprq3qi%2FarrI%3D&pass_ticket=sevNJm0url4lVbyUnV2k6GyH5CYs9swmcBVVF3Bsm5L7SvnlqRLaz8jUj3pGRvft

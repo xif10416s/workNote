@@ -1,6 +1,7 @@
 ##  参考阅读
 *	https://www.iteblog.com/archives/2584.html
 *	https://www.iteblog.com/archives/2591.html
+*	https://www.youtube.com/watch?v=F91G4RoA8is&list=PLTPXxbhUt-YVPwG3OWNQ-1bJI_s_YRvqP&index=15&t=23s
 
 
 ##	Transaction Log 
@@ -34,3 +35,28 @@
 *	![](../images/image7.png)
 *	每10个文件提交会自动生成一个chcheckeckpoint
 	*	checkpoint 文件保存了当前表的状态， 使用parquet格式，方便spark读取
+
+
+
+
+
+####  time travel
+
+#####  通过版本方式
+
+![image-20200705144529792](../images/image-20200705144529792.png)
+
+
+
+##### 通过时间戳方式
+
+
+
+#####  TIme travel 限制
+
+* 事务日志的有效期： delta.logRetentionDuration
+* 数据文件的有效期：delta.deletedFileRetentionDuration
+  * 通过执行Vacuum, 删除这些失效的文件
+* time travel 对于存储和性能的损耗，不建议支持年维度
+  * 主要用来防止一开始错误使用数据，可以返回之前的版本重新尝试
+

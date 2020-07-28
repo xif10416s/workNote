@@ -400,6 +400,30 @@
 
 
 
+####  redis性能
+
+#####  慢查询日志查看
+
+* **SLOWLOG GET [number]**命令，可以输出最近进入Slow Log的number条命令。
+* 使用**SLOWLOG RESET**命令，可以重置Slow Log
+
+*  Redis提供了Slow Log功能，可以自动记录耗时较长的命令。
+
+  ```
+  slowlog-log-slower-than xxxms  #执行时间慢于xxx毫秒的命令计入Slow Log
+  slowlog-max-len xxx  #Slow Log的长度，即最大纪录多少条Slow Log
+  ```
+
+#####   **长耗时命令**优化
+
+* 不要把List当做列表使用，仅当做队列来使用；list是linkedlist实现，索引相关操作耗时
+* 通过机制严格控制Hash、Set、Sorted Set的大小
+* 可能的话，将排序、并集、交集等操作放在客户端执行
+* 绝对禁止使用KEYS命令
+* 避免一次性遍历集合类型的所有成员，而应使用SCAN类的命令进行分批的，游标式的遍历
+
+
+
 #####   分布式锁和Redlock
 
 * 最初分布式锁借助于setnx和expire命令，但是这两个命令不是原子操作
@@ -492,4 +516,5 @@ nodeAddresses
 *	https://github.com/redisson/redisson/wiki/%E7%9B%AE%E5%BD%95
 *	https://mp.weixin.qq.com/s?__biz=MzA5MTc0NTMwNQ==&mid=2650719859&idx=1&sn=b55cd8838329737c3056681a4ed1e430&chksm=887ddb05bf0a52138f027cf0b20a8b3a80c6f256baaf290b121f6ac74396169355ae9e083bbd&scene=126&sessionid=1588727501&key=99ef7414318fbe187906b9d55955ae67700442af3a87c5d6ae82c4d182176b0f85cd13de5d5439fceab6b2ba4bc6b91782b12b149cd872059c18184f02e017fbd2b1621f9606ff8878ecf4c18e0e49c2&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10&version=62080079&lang=zh_CN&exportkey=AfrwBXccwRBcndnocCkYjcE%3D&pass_ticket=LPSbkDJNYtM03WvFhUCwCDhlPxk2J8JL7vu0h%2FKRQNaVG30YE5Z7z3K%2FQ4ckpqvB
 *	[阿里云 Redis 开发规范 ](https://mp.weixin.qq.com/s?__biz=MzU2Njg3OTU1Mg==&mid=2247485338&idx=1&sn=06d6e30281025f4cfbc1e062046fa06a&chksm=fca4f3b5cbd37aa3b0a1d116291d0bfbeae1266e5842c3fbc93e6b2f13169e77f89f80393894&scene=126&sessionid=1589935173&key=305519977f03d30e589f637f508f3fb18d0e61578a2f4bc311ef8ec7f6586e794f7a81c554d3be8a709ec073009e95f309bfd9b6a5847f2b938453d4bc5fb1bbe9074fbe72e9f50f1bacf7e533bb827e&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=ATPN2bwJFc0mMk0FE82FQys%3D&pass_ticket=koMI0bdRosp%2B2wnIxAP%2F2esZhMGGhgQ91DBvxEIxR%2Fqd9g%2Brc9TFEYpoxMC5dfcB)
+*	https://mp.weixin.qq.com/s?__biz=MzU0OTE4MzYzMw==&mid=2247489696&idx=4&sn=2fd1506f86df66d4e3a80bd0a82cc779&chksm=fbb2915eccc518486f82dd7dad444559bd6a026dab16e5911b31f2e6594dd41376443dd1a590&scene=126&sessionid=1594771945&key=5dd492e10b98b5a24ce7ee6f5886d240d4954b933c58ff23605a38d7e1b70489d207ea4cc2a919240ee5a3379581b3ecf9cbff5ce5f8e5876166e4e6b9259b0eb19622ef30c9aa6b67fa9d360242b983&ascene=1&uin=Mjk1NTAwNzcwMg%3D%3D&devicetype=Windows+10+x64&version=62090070&lang=zh_CN&exportkey=AS6SlkeVWVL4%2BHmfNjVBUvA%3D&pass_ticket=qkEkTkZo7tI9omiFW943II4i2uUopRYuxrwXCs608%2FZ%2FqNaQDAxi2cauYUqNBH1s
 

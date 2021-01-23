@@ -6,7 +6,7 @@
 *   易于扩展数据源，如半结构化数据，外部数据
 *   可以被其他高级算法使用如graph,machine learning
 
-##基本流程
+## 基本流程
 ![](../../images/4.png)
 
 ##  基本组件
@@ -38,7 +38,7 @@
 1.  通过Encoder
     -   运行时生成的自定义bytecode序列化反序列化,加速,减少网络传输
     -   一些操作无需反序列化就可以操作
-   
+
 ####   Encoder
 *   将jvm类型为T的jvm对象转换为spark sql 内部的结构表现
 *   通常由sparksession隐式转换而来

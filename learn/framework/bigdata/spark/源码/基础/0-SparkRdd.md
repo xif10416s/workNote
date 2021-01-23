@@ -75,7 +75,7 @@ ParallelCollectionRDD#deps = nil
     -   task计算时调用，
 
 ##  基本操作
-###   Transformations操作
+###   Transformations操作 -- 返回RDD
 ####  map\[U: ClassTag\](f: T => U): RDD\[U\]
 *   调用函数f ,将每个T类型元素转换成U类型元素，iter.map(cleanF)
 *   通过包装成 MapPartitionsRDD
@@ -119,7 +119,7 @@ ParallelCollectionRDD#deps = nil
 
 
 
-### actions操作
+### actions操作 -- 返回的是值
 ####    reduce(f: (T, T) => T): T 
 *   需要准备reducePartition函数，如何合并partition迭代结果，在远程端执行
 *   mergeResult函数，如何合并partition返回结果，在driver端

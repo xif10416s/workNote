@@ -10,7 +10,7 @@
 
 * maven helper
 
-* mybaitsX ， MyBatis Log Plugin ，
+* mybatisx， MyBatis Log Plugin ，
 
 * Bytecode Viewer
 
